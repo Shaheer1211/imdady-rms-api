@@ -77,9 +77,16 @@ class IngredientCategoriesController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateIngredientCategoriesRequest $request, IngredientCategories $ingredientCategories)
+    public function update(Request $request, string $id)
     {
-        //
+        $ingredientCategory = $this->ingredientCategories->find($id);
+
+        if ($ingredientCategory){
+            $ingredientCategory->update($request->all());
+            return response()->json(['message' => 'Ingredient Category update successfully'], 200);
+        }else {
+            return response()->json(['message' => 'Ingredient Category not found'], 404);
+        }
     }
 
     /**

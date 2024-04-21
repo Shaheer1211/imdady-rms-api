@@ -36,6 +36,10 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('subCategories', FoodMenuSubCategoriesController::class);
         Route::apiResource('vats', VatsController::class);
         Route::apiResource('foodMenus', FoodMenusController::class);
+        Route::apiResource('tables', TablesController::class);
+        Route::apiResource('returns', ReturnsController::class);
+        Route::apiResource('deposit', DepositController::class);
+        Route::apiResource('banners', BannersController::class);
     });
 
     // Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {
