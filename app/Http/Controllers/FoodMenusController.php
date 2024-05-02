@@ -7,6 +7,7 @@ use App\Http\Controllers\API\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateFoodMenusRequest;
 use Illuminate\Http\Request;
 use Validator;
+use Illuminate\Support\Facades\Storage;
 
 class FoodMenusController extends BaseController
 {
@@ -19,9 +20,26 @@ class FoodMenusController extends BaseController
         $this->foodMenus = new FoodMenus();
 
     }
-    public function index()
+    public function index(Request $request)
     {
-        return $this->foodMenus->all();
+        $outletId = $request->query('outlet_id');
+
+        $query = $this->foodMenus->newQuery();
+
+        if ($outletId) {
+            $query->where('outlet_id', $outletId);
+        }
+
+        $foodMenus = $query->get();
+
+        // Append the full image URL to each food menu item
+        $foodMenus->each(function ($foodMenu) {
+            if ($foodMenu->photo) {
+                $foodMenu->photo_url = Storage::url($foodMenu->photo);
+            }
+        });
+
+        return response()->json($foodMenus);
     }
 
     /**
@@ -44,8 +62,8 @@ class FoodMenusController extends BaseController
             'add_port_by_product' => 'nullable|string|max:255',
             'category_id' => 'required|exists:food_menu_categories,id',
             'sub_category_id' => 'required|exists:food_menu_sub_categories,id',
-            'is_deals' => 'required|string|max:255',
-            'deal_items_and_qty' => 'nullable|text',
+            'is_discount' => 'required|string|max:255',
+            'discount_amount' => 'nullable|numeric',
             'description' => 'required|string|max:255',
             'sale_price' => 'required|numeric',
             'hunger_station_price' => 'required|numeric',
@@ -57,7 +75,7 @@ class FoodMenusController extends BaseController
             'vat_id' => 'required|exists:vats,id',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
-            'photo' => 'required|string|max:255',
+            'photo' => 'required|file',
             'veg_item' => 'nullable|string|max:255',
             'beverage_item' => 'nullable|string|max:255',
             'bar_item' => 'nullable|string|max:255',
@@ -70,7 +88,14 @@ class FoodMenusController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        return $this->foodMenus->create($request->all());
+        $photoName = null;
+        if ($request->hasFile('photo')) {
+            $photoName = $request->file('photo')->store('photos', 'public');
+        }
+
+        $foodMenu = $this->foodMenus->create(array_merge($request->all(), ['photo' => $photoName]));
+
+        return response()->json(['message' => 'Food Menu created successfully', 'data' => $foodMenu], 200);
     }
 
     /**
@@ -78,12 +103,17 @@ class FoodMenusController extends BaseController
      */
     public function show($id)
     {
-        $foodMenus = $this->foodMenus->find($id);
-        if (is_null($foodMenus)) {
+        $foodMenu = $this->foodMenus->find($id);
+        if (is_null($foodMenu)) {
             return $this->sendError('Food Menu not found.');
         }
 
-        return $foodMenus;
+        // Append the full image URL to the food menu item
+        if ($foodMenu->photo) {
+            $foodMenu->photo_url = Storage::url($foodMenu->photo);
+        }
+
+        return response()->json($foodMenu);
     }
 
     /**

@@ -5,38 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FoodMenus extends Model
+class Deal extends Model
 {
     use HasFactory;
 
+    protected $table = 'deal';
     protected $fillable = [
-        "id",
+        'id',
         'code',
         'name',
         'name_arabic',
-        'add_port_by_product',
         'category_id',
-        'sub_category_id',
-        'is_discount',
-        'discount_amount',
-        'description',
         'sale_price',
+        'description',
+        'is_discount',
+        'discount_percentage',
         'hunger_station_price',
         'jahiz_price',
         'tax_method',
         'kot_print',
-        'is_vendor',
-        'vendor_name',
         'vat_id',
+        'photo',
         'user_id',
         'outlet_id',
-        'photo',
-        'veg_item',
-        'beverage_item',
-        'bar_item',
-        'stock',
-        'is_new',
-        'is_tax_fix',
         'created_at',
         'updated_at',
         'del_status',

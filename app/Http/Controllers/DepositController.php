@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Deposit;
 use App\Http\Controllers\API\Auth\BaseController as BaseController;
-use App\Http\Requests\StoreDepositRequest;
-use App\Http\Requests\UpdateDepositRequest;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -85,7 +83,7 @@ class DepositController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateDepositRequest $request, Deposit $deposit)
+    public function update(Request $request, Deposit $deposit)
     {
         //
     }

@@ -11,6 +11,23 @@ Route::group(['prefix' => 'rms'], function () {
             Route::post('logout', 'logout')->middleware(['customer', 'auth:sanctum']);
         });
     });
+    Route::group(['prefix' => 'customer'], function () {
+        Route::get('categories', 'FoodMenuCategoriesController@index');
+        Route::get('ingredientCategories', 'IngredientCategoriesController@index');
+        Route::get('ingredientUnits', 'IngredientUnitController@index');
+        Route::get('ingredients', 'IngredientController@index');
+        Route::get('modifiers', 'ModifiersController@index');
+        Route::get('subCategories', 'FoodMenuSubCategoriesController@index');
+        Route::get('vats', 'VatsController@index');
+        Route::get('foodMenus', 'FoodMenusController@index');
+        Route::get('tables', 'TablesController@index');
+        Route::get('returns', 'ReturnsController@index');
+        Route::get('deposit', 'DepositController@index');
+        Route::get('banners', 'BannersController@index');
+        Route::get('settings', 'BusinessSettingsController@index');
+        Route::get('deals', 'DealController@index');
+        Route::apiResource('cart', 'CartController@index');
+    });
     // all admin routes
     Route::group(['namespace' => 'api\auth', 'prefix' => 'admin'], function () {
         Route::controller(UserLoginRegister::class)->group(function () {
@@ -40,6 +57,9 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('returns', ReturnsController::class);
         Route::apiResource('deposit', DepositController::class);
         Route::apiResource('banners', BannersController::class);
+        Route::apiResource('settings', BusinessSettingsController::class);
+        Route::apiResource('cart', CartController::class);
+        Route::apiResource('deal', DealController::class);
     });
 
     // Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {
