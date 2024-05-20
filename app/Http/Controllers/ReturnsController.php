@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\returns;
 use App\Http\Requests\StorereturnsRequest;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdatereturnsRequest;
 use Validator;
 

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Outlet;
 use App\Models\OutletsSettings;
 use Illuminate\Http\Request;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 

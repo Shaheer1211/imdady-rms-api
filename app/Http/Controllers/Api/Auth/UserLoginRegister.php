@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +26,8 @@ class UserLoginRegister extends BaseController
             // 'module_access' => 'required|array'
             'module_access' => 'required'
         ]);
-   
+        print_r($request);
+        exit();
         if($validator->fails()){
             return $this->sendError('Validation Error.', $validator->errors());       
         }

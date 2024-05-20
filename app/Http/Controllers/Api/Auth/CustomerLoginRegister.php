@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 

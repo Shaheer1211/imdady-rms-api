@@ -26,6 +26,8 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('banners', 'BannersController@index');
         Route::get('settings', 'BusinessSettingsController@index');
         Route::get('deals', 'DealController@index');
+        Route::get('get-outlets', 'OutletController@index');
+        Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
         Route::apiResource('cart', 'CartController@index');
     });
     // all admin routes
@@ -53,6 +55,7 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('subCategories', FoodMenuSubCategoriesController::class);
         Route::apiResource('vats', VatsController::class);
         Route::apiResource('foodMenus', FoodMenusController::class);
+        Route::apiResource('foodMenuModifiers', FoodMenuModifiersController::class);
         Route::apiResource('tables', TablesController::class);
         Route::apiResource('returns', ReturnsController::class);
         Route::apiResource('deposit', DepositController::class);
@@ -60,6 +63,27 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('settings', BusinessSettingsController::class);
         Route::apiResource('cart', CartController::class);
         Route::apiResource('deal', DealController::class);
+        Route::apiResource('topbanner', TopbannerController::class);
+        Route::apiResource('ordertype', OrdertypeController::class);
+        Route::apiResource('socialmedia', SocialmediaController::class);
+        Route::apiResource('coupons', CouponssController::class);
+        Route::apiResource('customer', CustomerController::class);
+        Route::apiResource('creditcard', CreditController::class);
+        Route::apiResource('subscription', SubscriptionController::class);
+        Route::apiResource('productdiscount', ProductdiscontController::class);
+        //catagory discount pags created in vs
+        Route::apiResource('purchase', PurchaseController::class);
+        //inventory
+        Route::apiResource('inventoryadjustment', InventoryadjustmentController::class);
+        Route::apiResource('expensescategory', ExpensesCategoryController::class);
+        Route::apiResource('expense', ExpenseController::class);
+        Route::apiResource('waste', WasteController::class);
+        Route::apiResource('companies', CompaniesController::class);
+        Route::apiResource('suppliers', SuppliersController::class);
+        Route::apiResource('vendor', VendorController::class);
+        Route::apiResource('supplierpayment', SupplierpaymentController::class);
+        Route::apiResource('customerDueReceives', CustomerDueReceivesController::class);
+        Route::apiResource('attendance', AttendanceController::class);
     });
 
     // Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Vats;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreVatsRequest;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateVatsRequest;
 use Validator;
 

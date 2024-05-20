@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BusinessSettings;
 use Illuminate\Http\Request;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateBusinessSettingsRequest;
 use Validator;
 use Illuminate\Support\Facades\Log;
@@ -54,7 +54,7 @@ class BusinessSettingsController extends BaseController
     {
         $validator = Validator::make($request->all(), [
             'type' => 'required',
-            'value' => 'required',
+            // 'value' => 'required',
             'status' => 'required',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id'

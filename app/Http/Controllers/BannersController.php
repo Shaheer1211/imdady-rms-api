@@ -6,7 +6,7 @@ use App\Models\Banners;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdatebannersRequest;
 use Validator;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Illuminate\Support\Facades\Storage;
 
 class BannersController extends BaseController
