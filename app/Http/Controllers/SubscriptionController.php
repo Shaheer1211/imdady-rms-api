@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\subscription;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\StoresubscriptionRequest;
 use App\Http\Requests\UpdatesubscriptionRequest;
 use Illuminate\Http\Request;

@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 
 class OutletController extends BaseController
 {
@@ -70,5 +72,24 @@ class OutletController extends BaseController
     public function destroy(Outlet $outlet)
     {
         //
+    }
+    public function ordertype($id)
+    {
+        if (is_null($id)) {
+            // Handle the null case, e.g., return an appropriate error response
+            return response()->json(['error' => 'Order type ID cannot be null'], 400);
+        }
+
+        $result = DB::table('outlet_by_ordertype')
+            ->leftJoin('outlets', 'outlets.id', '=', 'outlet_by_ordertype.outlet_id')
+            ->where('outlet_by_ordertype.ordertype_id', $id)
+            ->get();
+
+        if ($result->isEmpty()) {
+            // Return a "no data" message if the result is empty
+            return response()->json(['message' => 'No data found for the given order type ID'], 404);
+        }
+
+        return response()->json($result);
     }
 }

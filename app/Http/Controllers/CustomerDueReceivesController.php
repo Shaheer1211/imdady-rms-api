@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\customer_due_receives;
 use App\Http\Requests\Storecustomer_due_receivesRequest;
 use App\Http\Requests\Updatecustomer_due_receivesRequest;

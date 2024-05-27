@@ -7,7 +7,7 @@ use App\Http\Requests\StorepurchaseRequest;
 use App\Http\Requests\UpdatepurchaseRequest;
 use Illuminate\Http\Request;
 use Validator;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 
 class PurchaseController extends BaseController
 {

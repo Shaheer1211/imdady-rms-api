@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
 use Illuminate\Http\Request;

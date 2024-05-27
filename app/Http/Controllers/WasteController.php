@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\waste;
 use App\Http\Requests\StorewasteRequest;
 use App\Http\Requests\UpdatewasteRequest;

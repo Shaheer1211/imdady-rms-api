@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\credit;
 use App\Http\Requests\StorecreditRequest;
 use App\Http\Requests\UpdatecreditRequest;

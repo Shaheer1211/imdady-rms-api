@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\couponss;
 use App\Http\Requests\StorecouponssRequest;
 use App\Http\Requests\UpdatecouponssRequest;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Illuminate\Http\Request;
 use Validator;
 

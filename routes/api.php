@@ -26,7 +26,9 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('banners', 'BannersController@index');
         Route::get('settings', 'BusinessSettingsController@index');
         Route::get('deals', 'DealController@index');
-        Route::get('get-outlets', 'OutletController@index');
+        // Route::get('get-outlets', 'OutletController@index');
+        Route::get('get-outlets/{id}', 'OutletController@ordertype');
+        Route::get('get-order-type', 'OrdertypeController@index');
         Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
         Route::apiResource('cart', 'CartController@index');
     });

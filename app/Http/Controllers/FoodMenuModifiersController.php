@@ -58,7 +58,7 @@ class FoodMenuModifiersController extends BaseController
                 "fm.created_at",
                 "fm.updated_at"
             )
-            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id\": \', m.id, \', \"addOn\": \"\', m.name, \'"}\') SEPARATOR \', \') AS modifiers'))
+            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id": \', m.id, \', "addOn": "\', m.name, \', "addOnPrice": "\', m.price, \'"}\') SEPARATOR \', \') AS modifiers'))   
             ->get();
 
         $foodMenus->each(function ($foodMenu) {
@@ -138,7 +138,7 @@ class FoodMenuModifiersController extends BaseController
                 "fm.created_at",
                 "fm.updated_at"
             )
-            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id": \', m.id, \', "addOn": "\', m.name, \'"}\') SEPARATOR \', \') AS modifiers'))
+            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id": \', m.id, \', "addOn": "\', m.name, \', "addOnPrice": "\', m.price, \'"}\') SEPARATOR \', \') AS modifiers'))
             ->first();
 
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\suppliers;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\StoresuppliersRequest;
 use App\Http\Requests\UpdatesuppliersRequest;
 use Illuminate\Http\Request;

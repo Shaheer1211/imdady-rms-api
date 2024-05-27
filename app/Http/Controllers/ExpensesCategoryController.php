@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Http\Controllers\API\Auth\BaseController as BaseController;
+use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\expenses_category;
 use App\Http\Requests\Storeexpenses_categoryRequest;
 use App\Http\Requests\Updateexpenses_categoryRequest;
