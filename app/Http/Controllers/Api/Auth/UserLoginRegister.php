@@ -26,8 +26,8 @@ class UserLoginRegister extends BaseController
             // 'module_access' => 'required|array'
             'module_access' => 'required'
         ]);
-        print_r($request);
-        exit();
+        // print_r($request);
+        // exit();
         if($validator->fails()){
             return $this->sendError('Validation Error.', $validator->errors());       
         }
