@@ -6,6 +6,7 @@ use App\Models\IngredientCategories;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateIngredientCategoriesRequest;
+use Illuminate\Support\Facades\DB;
 use Validator;
 
 class IngredientCategoriesController extends BaseController
@@ -21,7 +22,11 @@ class IngredientCategoriesController extends BaseController
     }
     public function index()
     {
-        return IngredientCategories::all();
+        $ingredientCategories = DB::table('ingredient_categories')
+            ->join('users', 'users.id', '=', 'ingredient_categories.user_id')
+            ->select('ingredient_categories.*', 'users.name as added_by')
+            ->get();
+        return $ingredientCategories;
     }
 
     /**
@@ -81,10 +86,10 @@ class IngredientCategoriesController extends BaseController
     {
         $ingredientCategory = $this->ingredientCategories->find($id);
 
-        if ($ingredientCategory){
+        if ($ingredientCategory) {
             $ingredientCategory->update($request->all());
             return response()->json(['message' => 'Ingredient Category update successfully'], 200);
-        }else {
+        } else {
             return response()->json(['message' => 'Ingredient Category not found'], 404);
         }
     }

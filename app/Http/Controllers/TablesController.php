@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateTablesRequest;
 use Validator;
+use Illuminate\Support\Facades\DB;
 
 class TablesController extends BaseController
 {
@@ -19,7 +20,11 @@ class TablesController extends BaseController
     }
     public function index()
     {
-        return $this->tables->all();
+        $tables = DB::table('tables')
+    ->join('users', 'users.id', '=', 'tables.user_id')
+    ->select('tables.*', 'users.name as added_by')
+    ->get();
+        return $tables;
     }
 
     /**
@@ -76,9 +81,16 @@ class TablesController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTablesRequest $request, Tables $tables)
+    public function update(Request $request, string $id)
     {
-        //
+        $tables = Tables::find($id);
+
+        if ($tables) {
+            $tables->update($request->all());
+            return response()->json(['message' => 'Table update successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Table not found'], 404);
+        }
     }
 
     /**

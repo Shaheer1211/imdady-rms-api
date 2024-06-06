@@ -75,9 +75,15 @@ class VatsController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVatsRequest $request, Vats $vats)
+    public function update(Request $request, string $id)
     {
-        //
+        $vats = vats::find($id);
+        if ($vats) {
+            $vats->update($request->all());
+            return response()->json(['message' => 'Vats update successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Vats not found'], 404);
+        }
     }
 
     /**
