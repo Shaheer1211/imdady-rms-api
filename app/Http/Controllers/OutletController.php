@@ -16,8 +16,14 @@ class OutletController extends BaseController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $status = $request->query('status');
+        
+        if ($status) {
+            return Outlet::where('status', $status)->get();
+        }
+
         return Outlet::all();
     }
 
@@ -33,10 +39,10 @@ class OutletController extends BaseController
             'email' => 'required|email|max:255',
             'address' => 'required|string',
             'status' => ['required', 'string', 'max:255', 'in:active,inactive'],
-            'registration_no' => 'required|string|max:50', 
+            'registration_no' => 'required|string|max:50',
         ]);
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());       
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
         }
         // Get the ID of the currently authenticated user
         $userId = Auth::id();
@@ -53,17 +59,30 @@ class OutletController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(Outlet $outlet)
+    public function show($id)
     {
-        //
+        $outlet = Outlet::find($id);
+
+        if (is_null($outlet)) {
+            return $this->sendError('Outlet not found.');
+        }
+
+        return $outlet;
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Outlet $outlet)
+    public function update(Request $request, $id)
     {
-        //
+        $outlet = Outlet::find($id);
+
+        if ($outlet) {
+            $outlet->update($request->all());
+            return response()->json(['message' => 'Outlet update successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Outlet not found'], 404);
+        }
     }
 
     /**

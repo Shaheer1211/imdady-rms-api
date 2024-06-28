@@ -43,8 +43,8 @@ class SupplierpaymentController extends BaseController
             'supplier_id' => 'nullable|numeric',
             'amount' => 'nullable|numeric',
             'note' => 'nullable|string|max:255',
-        'user_id' => 'required|exists:users,id',
-        'outlet_id' => 'required|exists:outlets,id',
+            'user_id' => 'required|exists:users,id',
+            'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
         if ($validator->fails()) {

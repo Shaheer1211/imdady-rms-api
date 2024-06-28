@@ -64,7 +64,7 @@ class InventoryadjustmentController extends BaseController
         {
             $inventoryadjustment = Inventoryadjustment::find($id);
     
-            if (is_null($credit)) {
+            if (is_null($inventoryadjustment)) {
                 return $this->sendError('inventoryadjustment not found.');
             }
     

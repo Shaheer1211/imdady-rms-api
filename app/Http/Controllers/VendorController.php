@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Models\vendor;
 use App\Http\Requests\StorevendorRequest;
@@ -40,9 +41,9 @@ class VendorController extends BaseController
         $validator = Validator::make($request->all(), [
             'vendor_name' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:255',
-        'description' => 'nullable|string|max:255',
-        'user_id' => 'required|exists:users,id',
-        'outlet_id' => 'required|exists:outlets,id',
+            'description' => 'nullable|string|max:255',
+            'user_id' => 'required|exists:users,id',
+            'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
         if ($validator->fails()) {
@@ -59,7 +60,7 @@ class VendorController extends BaseController
     {
         $vendor = Vendor::find($id);
 
-        if (is_null($suppliers)) {
+        if (is_null($vendor)) {
             return $this->sendError('vendor not found.');
         }
 

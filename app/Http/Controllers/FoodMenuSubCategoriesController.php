@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdateFoodMenuSubCategoriesRequest;
 use Validator;
+use Illuminate\Support\Facades\DB;
 
 class FoodMenuSubCategoriesController extends BaseController
 {
@@ -19,9 +20,17 @@ class FoodMenuSubCategoriesController extends BaseController
         $this->subCategories = new FoodMenuSubCategories();
 
     }
-    public function index()
+    public function index(Request $request)
     {
-        return $this->subCategories->all();
+        $category_id = $request->query('category_id');
+        $results = DB::table('food_menu_sub_categories')
+            ->select('food_menu_sub_categories.*', 'food_menu_categories.category_name AS category_name', 'food_menu_categories.cat_name_arabic AS category_name_ar', 'users.name as added_by')
+            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menu_sub_categories.category_id')
+            ->join('users', 'users.id', '=', 'food_menu_sub_categories.user_id');
+        if ($category_id) {
+            $results->where('food_menu_sub_categories.category_id', '=', $category_id);
+        }
+        return $results->get();
     }
 
     /**
@@ -58,12 +67,18 @@ class FoodMenuSubCategoriesController extends BaseController
      */
     public function show($id)
     {
-        $subCategories = $this->subCategories->find($id);
-        if (is_null($subCategories)) {
+        // $subCategories = $this->subCategories->find($id);
+        $results = DB::table('food_menu_sub_categories')
+            ->select('food_menu_sub_categories.*', 'food_menu_categories.category_name AS category_name', 'food_menu_categories.cat_name_arabic AS category_name_ar', 'users.name as added_by')
+            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menu_sub_categories.category_id')
+            ->join('users', 'users.id', '=', 'food_menu_sub_categories.user_id')
+            ->where('food_menu_sub_categories.id', '=', $id)
+            ->get();
+        if (is_null($results)) {
             return $this->sendError('Sub Category not found.');
         }
 
-        return $subCategories;
+        return $results;
     }
 
     /**
@@ -77,9 +92,15 @@ class FoodMenuSubCategoriesController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFoodMenuSubCategoriesRequest $request, FoodMenuSubCategories $foodMenuSubCategories)
+    public function update(Request $request, string $id)
     {
-        //
+        $subCategories = $this->subCategories->find($id);
+        if ($subCategories) {
+            $subCategories->update($request->all());
+            return response()->json(['message' => 'Sub Category update successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Sub Category not found'], 404);
+        }
     }
 
     /**

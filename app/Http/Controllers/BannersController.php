@@ -33,7 +33,7 @@ class BannersController extends BaseController
 
         // Append the full image URL to each banner object
         $banners->each(function ($banner) {
-            $banner->image_url = Storage::url($banner->banner_image);
+            $banner->image_url = url(Storage::url($banner->banner_image));
         });
 
         return response()->json($banners);
@@ -61,7 +61,10 @@ class BannersController extends BaseController
         ]);
 
         // Store the image in the storage folder
-        $imagePath = $request->file('banner_image')->store('banners', 'public');
+        $imageName = $request->banner_image->getClientOriginalExtension();
+        $image = rand().'.'.$imageName;
+        $request->banner_image->move('storage/banners', $image);
+        $imagePath = 'banners/'.$image;
 
         // Create a new banner record in the database
         $banner = new Banners();
@@ -73,7 +76,6 @@ class BannersController extends BaseController
         $banner->save();
 
         return response()->json(['message' => 'Banner created successfully'], 201);
-
     }
 
     /**
@@ -88,7 +90,7 @@ class BannersController extends BaseController
         }
 
         // Append the full image URL to the banner object
-        $banner->image_url = Storage::url($banner->banner_image);
+        $banner->image_url = url(Storage::url($banner->banner_image));
 
         return response()->json($banner);
     }

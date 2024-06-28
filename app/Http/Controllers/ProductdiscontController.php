@@ -67,7 +67,7 @@ class ProductdiscontController extends BaseController
         {
             $productdiscont = Productdiscont::find($id);
     
-            if (is_null($credit)) {
+            if (is_null($productdiscont)) {
                 return $this->sendError('productdiscont not found.');
             }
     

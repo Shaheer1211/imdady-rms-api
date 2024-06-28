@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('category_name')->nullable();
             $table->string('cat_name_arabic');
+            $table->text('description')->nullable();
             $table->string('cat_image')->nullable();
             $table->string('cat_banner')->nullable();
             $table->enum('web_status', ['active', 'inactive'])->default('active');

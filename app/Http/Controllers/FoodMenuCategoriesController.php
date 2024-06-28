@@ -18,17 +18,37 @@ class FoodMenuCategoriesController extends BaseController
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = $this->categories->all();
-
-    // Append the full image URL to each category object
-    $categories->each(function ($category) {
-        $category->cat_image_url = Storage::url($category->cat_image);
-        $category->cat_banner_url = Storage::url($category->cat_banner);
-    });
-    return response()->json($categories);
+        // Start with the query builder instance
+        $query = $this->categories->newQuery();
+    
+        // Apply filters if they are present in the request
+        if ($request->has('status')) {
+            $query->where('status', $request->query('status'));
+        }
+        if ($request->has('web_status')) {
+            $query->where('web_status', $request->query('web_status'));
+        }
+        if ($request->has('subscriptions_status')) {
+            $query->where('subscriptions_status', $request->query('subscriptions_status'));
+        }
+        if ($request->has('is_sub_cat')) {
+            $query->where('is_sub_cat', $request->query('is_sub_cat'));
+        }
+    
+        // Retrieve the categories based on the query
+        $categories = $query->get();
+    
+        // Append the full image URL to each category object
+        $categories->each(function ($category) {
+            $category->cat_image_url = Storage::url($category->cat_image);
+            $category->cat_banner_url = Storage::url($category->cat_banner);
+        });
+    
+        return response()->json($categories);
     }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -39,6 +59,7 @@ class FoodMenuCategoriesController extends BaseController
 
             'category_name' => 'nullable|string|max:255',
             'cat_name_arabic' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'cat_image' => 'nullable|file|max:255',
             'cat_banner' => 'nullable|file|max:255',
             'web_status' => 'required|in:active,inactive',
@@ -49,7 +70,7 @@ class FoodMenuCategoriesController extends BaseController
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
             'is_sub_cat' => 'required|boolean',
-            'is_priority' => 'required|integer',
+            'is_priority' => 'nullable|integer',
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
@@ -62,6 +83,7 @@ class FoodMenuCategoriesController extends BaseController
         $category = new FoodMenuCategories();
         $category->category_name = $request->input('category_name');
         $category->cat_name_arabic = $request->input('cat_name_arabic');
+        $category->description = $request->input('description');
         $category->cat_image = $catImage;
         $category->cat_banner = $catBanner;
         $category->web_status = $request->input('web_status');
@@ -84,15 +106,15 @@ class FoodMenuCategoriesController extends BaseController
     public function show(string $id)
     {
         $category = $this->categories->find($id);
-        
+
         if (is_null($category)) {
             return $this->sendError('Category not found.');
         }
-    
+
         // Append the full image URL to the category object
         $category->cat_image_url = Storage::url($category->cat_image);
         $category->cat_banner_url = Storage::url($category->cat_banner);
-        
+
         return response()->json($category);
     }
 

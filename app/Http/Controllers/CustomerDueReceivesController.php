@@ -59,7 +59,7 @@ class CustomerDueReceivesController extends Controller
      */
     public function show($id)
     {
-        $supplierpayment = Supplierpayment::find($id);
+        $customer_due_receives = customer_due_receives::find($id);
 
         if (is_null($customer_due_receives)) {
             return $this->sendError('customer_due_receives not found.');

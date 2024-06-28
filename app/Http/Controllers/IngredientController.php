@@ -7,6 +7,7 @@ use App\Models\Ingredient;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateIngredientRequest;
 use Validator;
+use Illuminate\Support\Facades\DB;
 
 class IngredientController extends BaseController
 {
@@ -14,12 +15,21 @@ class IngredientController extends BaseController
      * Display a listing of the resource.
      */
     protected $ingredients;
-    public function __construct(){
-        $this->ingredients = new Ingredient(); 
+    public function __construct()
+    {
+        $this->ingredients = new Ingredient();
     }
     public function index()
     {
-        return $this->ingredients->all();
+        // return $this->ingredients->all();
+        $ingredients = DB::table('ingredients')
+            ->join('ingredient_categories', 'ingredient_categories.id', '=', 'ingredients.category_id')
+            ->join('ingredient_units', 'ingredient_units.id', '=', 'ingredients.unit_id')
+            ->join('users', 'users.id', '=', 'ingredients.user_id')
+            ->select('ingredients.*', 'ingredient_categories.category_name', 'ingredient_units.unit_name', 'users.name as added_by')
+            ->get();
+
+        return $ingredients;
     }
 
     /**
@@ -37,22 +47,22 @@ class IngredientController extends BaseController
     {
         //
         $validator = Validator::make($request->all(), [
-            'code'=> 'nullable|string|max:255',
-            'name'=> 'nullable|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
             'category_id' => 'required|exists:ingredient_categories,id',
-            'purchase_price'=> 'nullable|numeric',
-            'vat_percentage'=> 'nullable|string|max:255',
-            'tax_method'=> 'nullable|string|max:255',
-            'ing_vat'=> 'nullable|string|max:255',
-            'total_amount'=> 'nullable|string|max:255',
-            'alert_quantity'=> 'nullable|numeric',
+            'purchase_price' => 'nullable|numeric',
+            'vat_percentage' => 'nullable',
+            'tax_method' => 'nullable|string|max:255',
+            'ing_vat' => 'nullable|integer',
+            'total_amount' => 'nullable|integer',
+            'alert_quantity' => 'nullable|numeric',
             'unit_id' => 'required|exists:ingredient_units,id',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());       
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
         }
 
         return $this->ingredients->create($request->all());
@@ -63,13 +73,19 @@ class IngredientController extends BaseController
      */
     public function show($id)
     {
-        $ingredient = Ingredient::find($id);
+        $ingredient = DB::table('ingredients')
+            ->join('ingredient_categories', 'ingredient_categories.id', '=', 'ingredients.category_id')
+            ->join('ingredient_units', 'ingredient_units.id', '=', 'ingredients.unit_id')
+            ->join('users', 'users.id', '=', 'ingredients.user_id')
+            ->select('ingredients.*', 'ingredient_categories.category_name', 'ingredient_units.unit_name', 'users.name as added_by')
+            ->where('ingredients.id', $id)
+            ->first();
 
         if (is_null($ingredient)) {
-            return $this->sendError('Ingredient not found.');
+            return response()->json(['error' => 'Ingredient not found.'], 404);
         }
 
-        return $ingredient;
+        return response()->json($ingredient);
     }
 
     /**
@@ -83,9 +99,16 @@ class IngredientController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateIngredientRequest $request, Ingredient $ingredient)
+    public function update(Request $request, $id)
     {
-        //
+        $ingredients = $this->ingredients->find($id);
+
+        if ($ingredients) {
+            $ingredients->update($request->all());
+            return response()->json(['message' => 'Ingredient update successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Ingredient not found'], 404);
+        }
     }
 
     /**

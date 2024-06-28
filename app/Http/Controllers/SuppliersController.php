@@ -61,7 +61,7 @@ class SuppliersController extends BaseController
     /**
      * Display the specified resource.
      */
-    public function show(suppliers $suppliers)
+    public function show($id)
     {
         $suppliers = Suppliers::find($id);
 

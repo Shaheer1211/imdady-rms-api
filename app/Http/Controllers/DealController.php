@@ -28,6 +28,7 @@ class DealController extends BaseController
                 'deal.id as deal_id',
                 'deal.name as deal_name',
                 'deal.name_arabic as deal_name_arabic',
+                'deal.code as deal_code',
                 'deal.sale_price',
                 'deal.photo as deal_photo',
                 'deal.is_discount',
@@ -35,9 +36,11 @@ class DealController extends BaseController
                 'vats.name as vat_name',
                 'vats.percentage as vat_percentage',
                 'food_menu_categories.category_name',
-                'food_menu_categories.cat_name_arabic'
+                'food_menu_categories.cat_name_arabic',
+                'users.name as added_by',
             )
             ->join('food_menu_categories', 'food_menu_categories.id', '=', 'deal.category_id')
+            ->join('users', 'users.id', '=', 'deal.user_id')
             ->join('vats', 'vats.id', '=', 'deal.vat_id');
 
         // Check if category_id is provided in the request

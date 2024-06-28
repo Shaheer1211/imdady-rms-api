@@ -54,7 +54,7 @@ class SocialmediaController extends BaseController
      */
     public function show($id)
     {
-        $Socialmedia = Socialmedia::find($id);
+        $socialmedia = Socialmedia::find($id);
 
         if (is_null($socialmedia)) {
             return $this->sendError('Socialmedia not found.');

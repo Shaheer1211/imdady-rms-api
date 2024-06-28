@@ -13,6 +13,7 @@ class FoodMenuCategories extends Model
     protected $fillable = [
         'category_name',
         'cat_name_arabic',
+        'description',
         'cat_image',
         'cat_banner',
         'web_status',

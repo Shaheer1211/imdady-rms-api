@@ -67,7 +67,7 @@ class PurchaseController extends BaseController
         {
             $purchase = Purchase::find($id);
     
-            if (is_null($credit)) {
+            if (is_null($purchase)) {
                 return $this->sendError('purchase not found.');
             }
     

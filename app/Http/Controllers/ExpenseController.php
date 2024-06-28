@@ -67,7 +67,7 @@ class ExpenseController extends BaseController
      */
     public function show($id)
     {
-        $deposit = Expense::find($id);
+        $expense = Expense::find($id);
 
         if (is_null($expense)) {
             return $this->sendError('expense not found.');

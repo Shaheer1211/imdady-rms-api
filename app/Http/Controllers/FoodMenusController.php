@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FoodMenuIngredient;
 use App\Models\FoodMenus;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateFoodMenusRequest;
 use Illuminate\Http\Request;
 use Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class FoodMenusController extends BaseController
 {
@@ -15,19 +17,80 @@ class FoodMenusController extends BaseController
      * Display a listing of the resource.
      */
     protected $foodMenus;
+    protected $foodMenuIngredient;
     public function __construct()
     {
         $this->foodMenus = new FoodMenus();
+        $this->foodMenuIngredient = new FoodMenuIngredient();
 
     }
     public function index(Request $request)
     {
         $outletId = $request->query('outlet_id');
+        $categoryId = $request->query('category_id');
+        $isFeatured = $request->query('isFeatured');
 
-        $query = $this->foodMenus->newQuery();
+        $data = [];
+
+        $query = DB::table('food_menuses')
+            ->select(
+                'food_menuses.id',
+                'food_menuses.code',
+                'food_menuses.name',
+                'food_menuses.name_arabic',
+                'food_menuses.add_port_by_product',
+                'food_menuses.sale_price',
+                'food_menuses.is_discount',
+                'food_menuses.discount_amount',
+                'food_menuses.hunger_station_price',
+                'food_menuses.jahiz_price',
+                'food_menuses.tax_method',
+                'food_menuses.kot_print',
+                'food_menuses.photo',
+                'food_menuses.veg_item',
+                'food_menuses.beverage_item',
+                'food_menuses.bar_item',
+                'food_menuses.is_new',
+                'food_menuses.is_tax_fix',
+                'food_menuses.del_status',
+                'food_menu_categories.category_name',
+                'food_menu_categories.cat_name_arabic',
+                'users.name as added_by',
+                DB::raw('COUNT(food_menu_ingredient.id) as ingredient_count')
+            )
+            ->leftJoin('food_menu_ingredient', 'food_menu_ingredient.food_menu_id', '=', 'food_menuses.id')
+            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menuses.category_id')
+            ->join('users', 'users.id', '=', 'food_menuses.user_id')
+            ->groupBy(
+                'food_menuses.id',
+                'food_menuses.code',
+                'food_menuses.name',
+                'food_menuses.name_arabic',
+                'food_menuses.add_port_by_product',
+                'food_menuses.sale_price',
+                'food_menuses.is_discount',
+                'food_menuses.discount_amount',
+                'food_menuses.hunger_station_price',
+                'food_menuses.jahiz_price',
+                'food_menuses.tax_method',
+                'food_menuses.kot_print',
+                'food_menuses.photo',
+                'food_menuses.veg_item',
+                'food_menuses.beverage_item',
+                'food_menuses.bar_item',
+                'food_menuses.is_new',
+                'food_menuses.is_tax_fix',
+                'food_menuses.del_status',
+                'food_menu_categories.category_name',
+                'food_menu_categories.cat_name_arabic',
+                'users.name'
+            );
 
         if ($outletId) {
-            $query->where('outlet_id', $outletId);
+            $query->where('food_menuses.outlet_id', $outletId);
+        }
+        if ($categoryId) {
+            $query->where('food_menuses.category_id', $categoryId);
         }
 
         $foodMenus = $query->get();
@@ -39,7 +102,77 @@ class FoodMenusController extends BaseController
             }
         });
 
-        return response()->json($foodMenus);
+        if ($isFeatured === 'yes') {
+            $featuredQuery = DB::table('food_menuses')
+                ->select(
+                    'food_menuses.id',
+                    'food_menuses.code',
+                    'food_menuses.name',
+                    'food_menuses.name_arabic',
+                    'food_menuses.add_port_by_product',
+                    'food_menuses.sale_price',
+                    'food_menuses.is_discount',
+                    'food_menuses.discount_amount',
+                    'food_menuses.hunger_station_price',
+                    'food_menuses.jahiz_price',
+                    'food_menuses.tax_method',
+                    'food_menuses.kot_print',
+                    'food_menuses.photo',
+                    'food_menuses.veg_item',
+                    'food_menuses.beverage_item',
+                    'food_menuses.bar_item',
+                    'food_menuses.is_new',
+                    'food_menuses.is_tax_fix',
+                    'food_menuses.del_status',
+                    'food_menu_categories.category_name',
+                    'food_menu_categories.cat_name_arabic',
+                    'users.name as added_by',
+                    DB::raw('COUNT(food_menu_ingredient.id) as ingredient_count')
+                )
+                ->leftJoin('food_menu_ingredient', 'food_menu_ingredient.food_menu_id', '=', 'food_menuses.id')
+                ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menuses.category_id')
+                ->join('users', 'users.id', '=', 'food_menuses.user_id')
+                ->groupBy(
+                    'food_menuses.id',
+                    'food_menuses.code',
+                    'food_menuses.name',
+                    'food_menuses.name_arabic',
+                    'food_menuses.add_port_by_product',
+                    'food_menuses.sale_price',
+                    'food_menuses.is_discount',
+                    'food_menuses.discount_amount',
+                    'food_menuses.hunger_station_price',
+                    'food_menuses.jahiz_price',
+                    'food_menuses.tax_method',
+                    'food_menuses.kot_print',
+                    'food_menuses.photo',
+                    'food_menuses.veg_item',
+                    'food_menuses.beverage_item',
+                    'food_menuses.bar_item',
+                    'food_menuses.is_new',
+                    'food_menuses.is_tax_fix',
+                    'food_menuses.del_status',
+                    'food_menu_categories.category_name',
+                    'food_menu_categories.cat_name_arabic',
+                    'users.name'
+                )
+                ->where('food_menuses.is_new', 'yes');
+
+            if ($outletId) {
+                $featuredQuery->where('food_menuses.outlet_id', $outletId);
+            }
+            if ($categoryId) {
+                $featuredQuery->where('food_menuses.category_id', $categoryId);
+            }
+
+            $featured = $featuredQuery->get();
+
+            $data['featured'] = $featured;
+        }
+
+        $data['menu'] = $foodMenus;
+
+        return response()->json($data);
     }
 
     /**
@@ -64,13 +197,13 @@ class FoodMenusController extends BaseController
             'sub_category_id' => 'required|exists:food_menu_sub_categories,id',
             'is_discount' => 'required|string|max:255',
             'discount_amount' => 'nullable|numeric',
-            'description' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'sale_price' => 'required|numeric',
             'hunger_station_price' => 'required|numeric',
             'jahiz_price' => 'required|numeric',
             'tax_method' => 'required|string|max:255',
             'kot_print' => 'required|string|max:255',
-            'is_vendor' => 'required|string|max:255',
+            'is_vendor' => 'nullable|string|max:255',
             'vendor_name' => 'nullable|string|max:255',
             'vat_id' => 'required|exists:vats,id',
             'user_id' => 'required|exists:users,id',
@@ -79,11 +212,15 @@ class FoodMenusController extends BaseController
             'veg_item' => 'nullable|string|max:255',
             'beverage_item' => 'nullable|string|max:255',
             'bar_item' => 'nullable|string|max:255',
-            'stock' => 'required|string|max:255',
+            'stock' => 'nullable|string|max:255',
             'is_new' => 'required|string|max:255',
             'is_tax_fix' => 'required|string|max:255',
-            'del_status' => 'nullable'
+            'del_status' => 'nullable',
+            'ingredients' => 'required|array', // Validate that ingredients is an array
+            'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
+            'ingredients.*.consumption' => 'required',
         ]);
+
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
@@ -94,6 +231,16 @@ class FoodMenusController extends BaseController
         }
 
         $foodMenu = $this->foodMenus->create(array_merge($request->all(), ['photo' => $photoName]));
+        $ingredients = $request->input('ingredients', []);
+        foreach ($ingredients as $ingredient) {
+            $this->foodMenuIngredient->create([
+                'food_menu_id' => $foodMenu->id,
+                'ingredient_id' => $ingredient['ingredient_id'],
+                'consumption' => $ingredient['consumption'],
+                'user_id' => $request->user_id,
+                'outlet_id' => $request->outlet_id,
+            ]);
+        }
 
         return response()->json(['message' => 'Food Menu created successfully', 'data' => $foodMenu], 200);
     }

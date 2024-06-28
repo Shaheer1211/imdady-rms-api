@@ -46,7 +46,9 @@ Route::group(['prefix' => 'rms'], function () {
     Route::group(['prefix' => 'admin', 'middleware' => ['admin', 'auth:sanctum']], function () {
         Route::controller(OutletController::class)->group(function () {
             Route::get('get-outlets', 'index');
+            Route::get('get-outlets/{id}', 'show');
             Route::post('add-outlet', 'store');
+            Route::put('update-outlet/{id}', 'update');
         });
     });
 

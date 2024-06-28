@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ModifierIngredient;
 use Illuminate\Http\Request;
 use App\Models\Modifiers;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\UpdateModifiersRequest;
 use Validator;
+use Illuminate\Support\Facades\DB;
 
 class ModifiersController extends BaseController
 {
@@ -14,12 +16,21 @@ class ModifiersController extends BaseController
      * Display a listing of the resource.
      */
     protected $modifiers;
-    public function __construct(){
-        $this->modifiers = new Modifiers(); 
+    protected $modifiersIngredient;
+    public function __construct()
+    {
+        $this->modifiers = new Modifiers();
+        $this->modifiersIngredient = new ModifierIngredient();
     }
     public function index()
     {
-        return $this->modifiers->all();
+        $results = DB::table('modifiers')
+            ->select('modifiers.id', 'modifiers.name', 'modifiers.price', 'modifiers.description', 'users.name as added_by', DB::raw('COUNT(modifiers_ingredient.id) as ingredient_count'))
+            ->leftJoin('modifiers_ingredient', 'modifiers.id', '=', 'modifiers_ingredient.modifier_id')
+            ->join('users', 'users.id', '=', 'modifiers.user_id')
+            ->groupBy('modifiers.id', 'modifiers.name', 'modifiers.price', 'modifiers.description', 'users.name')
+            ->get();
+        return $results;
     }
 
     /**
@@ -36,21 +47,37 @@ class ModifiersController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'code'=> 'nullable|string|max:255',
-            'name'=> 'nullable|string|max:255',
-            'price'=> 'nullable|numeric',
-            'description'=> 'nullable|string|max:255',
-            'tax_method'=> 'nullable|string|max:255',
-            'tax'=> 'nullable|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'price' => 'nullable|numeric',
+            'description' => 'nullable|string|max:255',
+            'tax_method' => 'nullable|string|max:255',
+            'tax' => 'nullable|string|max:255',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
-            'del_status' => 'nullable'
+            'del_status' => 'nullable',
+            'ingredients' => 'required|array', // Validate that ingredients is an array
+            'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
+            'ingredients.*.consumption' => 'required',
         ]);
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());       
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        return $this->modifiers->create($request->all());
+        $modifierData = $request->only(['code', 'name', 'price', 'description', 'tax_method', 'tax', 'user_id', 'outlet_id', 'del_status']);
+        $modifier = $this->modifiers->create($modifierData);
+        $ingredients = $request->ingredients;
+        $ingredients = $request->input('ingredients', []);
+        foreach ($ingredients as $ingredient) {
+            $this->modifiersIngredient->create([
+                'modifier_id' => $modifier->id,
+                'ingredient_id' => $ingredient['ingredient_id'],
+                'consumption' => $ingredient['consumption'],
+                'user_id' => $request->user_id,
+                'outlet_id' => $request->outlet_id,
+            ]);
+        }
+        return response()->json(['success' => true, 'modifier' => $modifier], 201);
     }
 
     /**
