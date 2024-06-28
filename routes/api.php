@@ -29,6 +29,7 @@ Route::group(['prefix' => 'rms'], function () {
         // Route::get('get-outlets', 'OutletController@index');
         Route::get('get-outlets/{id}', 'OutletController@ordertype');
         Route::get('get-order-type', 'OrdertypeController@index');
+        Route::get('outletCities', 'OutletController@outletCities');
         Route::get('foodMenuModifier', 'FoodMenuModifiersController@index');
         Route::get('foodMenuModifier/{id}', 'FoodMenuModifiersController@show');
         Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
@@ -49,6 +50,8 @@ Route::group(['prefix' => 'rms'], function () {
             Route::get('get-outlets/{id}', 'show');
             Route::post('add-outlet', 'store');
             Route::put('update-outlet/{id}', 'update');
+            Route::get('cities', 'cities');
+            Route::get('outletCities', 'outletCities');
         });
     });
 
@@ -100,6 +103,21 @@ Route::group(['prefix' => 'rms'], function () {
     // Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {
     //     Route::apiResource('ingredientUnits', IngredientUnitController::class);
     // });
+});
+
+Route::get('maintenance/clear-and-cache', function () {
+    // Clear configurations
+    Artisan::call('config:clear');
+    // Clear routes
+    Artisan::call('route:clear');
+    // Clear events
+    Artisan::call('event:clear');
+    // Clear views
+    Artisan::call('view:clear');
+    // Cache configurations
+    Artisan::call('config:cache');
+
+    return response()->json(['message' => 'Configuration, routes, events, and views cleared and configuration cached successfully.']);
 });
 
 Route::fallback(function () {

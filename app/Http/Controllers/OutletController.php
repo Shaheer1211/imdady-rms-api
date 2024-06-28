@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outlet;
+use App\Models\OutletByOrdertype;
 use App\Models\OutletsSettings;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
@@ -19,12 +20,27 @@ class OutletController extends BaseController
     public function index(Request $request)
     {
         $status = $request->query('status');
+        $cityId = $request->query('cityId');
+        $orderTypeId = $request->query('orderTypeId');
         
-        if ($status) {
-            return Outlet::where('status', $status)->get();
+        $query = DB::table('outlets');
+
+        if ($orderTypeId) {
+            $query->join('outlet_by_ordertype', 'outlets.id', '=', 'outlet_by_ordertype.outlet_id')
+                  ->where('outlet_by_ordertype.ordertype_id', $orderTypeId);
         }
 
-        return Outlet::all();
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        if ($cityId) {
+            $query->where('city_id', $cityId);
+        }
+
+        $outlets = $query->get();
+
+        return response()->json($outlets);
     }
 
     /**
@@ -38,8 +54,10 @@ class OutletController extends BaseController
             'phone' => 'required|string|max:20',
             'email' => 'required|email|max:255',
             'address' => 'required|string',
+            'city_id' => 'required|integer',
             'status' => ['required', 'string', 'max:255', 'in:active,inactive'],
             'registration_no' => 'required|string|max:50',
+            'order_type' => 'required|array'
         ]);
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
@@ -53,6 +71,14 @@ class OutletController extends BaseController
         // If the validation passes, you can create a new record
         $createdOutlet = Outlet::create($requestData);
         OutletsSettings::create(['outlet_id' => $createdOutlet->id]);
+
+        $orderType = $request->order_type;
+
+        foreach($orderType as $type) {
+            $type['outlet_id'] = $createdOutlet->id;
+            OutletByOrdertype::create($type);
+        }
+        
         return $createdOutlet;
     }
 
@@ -110,5 +136,34 @@ class OutletController extends BaseController
         }
 
         return response()->json($result);
+    }
+
+    public function cities()
+    {
+        $query = DB::table('cities')
+            ->select('*')
+            ->get()
+            ->map(function ($item) {
+                return array_map(function ($value) {
+                    return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+                }, (array)$item);
+            });
+    
+        return response()->json($query);
+    }
+    public function outletCities()
+    {
+        $query = DB::table('outlets')
+        ->select([
+            'outlets.city_id',
+            'cities.name_en',
+            'cities.name_ar',
+            DB::raw('COUNT(outlets.city_id) AS count')
+        ])
+        ->join('cities', 'outlets.city_id', '=', 'cities.city_id')
+        ->groupBy('outlets.city_id', 'cities.name_en', 'cities.name_ar')
+        ->get();
+
+    return $query;
     }
 }

@@ -42,8 +42,8 @@ class FoodMenuCategoriesController extends BaseController
     
         // Append the full image URL to each category object
         $categories->each(function ($category) {
-            $category->cat_image_url = Storage::url($category->cat_image);
-            $category->cat_banner_url = Storage::url($category->cat_banner);
+            $category->cat_image_url = url(Storage::url($category->cat_image));
+            $category->cat_banner_url = url(Storage::url($category->cat_banner));
         });
     
         return response()->json($categories);
@@ -75,17 +75,11 @@ class FoodMenuCategoriesController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
-        $catImage = $request->file('cat_image')->store('category_images', 'public');
-        $catBanner = $request->file('cat_banner')->store('category_banners', 'public');
 
-        $catImage = $request->file('cat_image')->store('category_images', 'public');
-        $catBanner = $request->file('cat_banner')->store('category_banners', 'public');
         $category = new FoodMenuCategories();
         $category->category_name = $request->input('category_name');
         $category->cat_name_arabic = $request->input('cat_name_arabic');
         $category->description = $request->input('description');
-        $category->cat_image = $catImage;
-        $category->cat_banner = $catBanner;
         $category->web_status = $request->input('web_status');
         $category->subscriptions_status = $request->input('subscriptions_status');
         $category->status = $request->input('status');
@@ -96,7 +90,19 @@ class FoodMenuCategoriesController extends BaseController
         $category->is_sub_cat = $request->input('is_sub_cat');
         $category->is_priority = $request->input('is_priority');
 
+        // Store the photos if provided
+        if ($request->hasFile('cat_image')) {
+            $catImage = $request->file('cat_image')->store('storage/category_images', 'public');
+            $category->cat_image = $catImage;
+        }
+
+        if ($request->hasFile('cat_banner')) {
+            $catBanner = $request->file('cat_banner')->store('storage/category_banners', 'public');
+            $category->cat_banner = $catBanner;
+        }
+
         $category->save();
+
         return response()->json(['message' => 'Category created successfully'], 200);
     }
 
@@ -112,8 +118,8 @@ class FoodMenuCategoriesController extends BaseController
         }
 
         // Append the full image URL to the category object
-        $category->cat_image_url = Storage::url($category->cat_image);
-        $category->cat_banner_url = Storage::url($category->cat_banner);
+        $category->cat_image_url = url(Storage::url($category->cat_image));
+        $category->cat_banner_url = url(Storage::url($category->cat_banner));
 
         return response()->json($category);
     }
@@ -125,8 +131,54 @@ class FoodMenuCategoriesController extends BaseController
     {
         $categories = $this->categories->find($id);
         if ($categories) {
-            $categories->update($request->all());
-            return response()->json(['message' => 'Category update successfully'], 200);
+            $validator = Validator::make($request->all(), [
+                'category_name' => 'nullable|string|max:255',
+                'cat_name_arabic' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'cat_image' => 'nullable|file|max:255',
+                'cat_banner' => 'nullable|file|max:255',
+                'web_status' => 'required|in:active,inactive',
+                'subscriptions_status' => 'required|in:active,inactive',
+                'status' => 'required|in:active,inactive',
+                'is_subscription' => 'required|boolean',
+                'add_port' => 'nullable|string|max:255',
+                'user_id' => 'required|exists:users,id',
+                'outlet_id' => 'required|exists:outlets,id',
+                'is_sub_cat' => 'required|boolean',
+                'is_priority' => 'nullable|integer',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->sendError('Validation Error.', $validator->errors());
+            }
+
+            $categories->category_name = $request->input('category_name');
+            $categories->cat_name_arabic = $request->input('cat_name_arabic');
+            $categories->description = $request->input('description');
+            $categories->web_status = $request->input('web_status');
+            $categories->subscriptions_status = $request->input('subscriptions_status');
+            $categories->status = $request->input('status');
+            $categories->is_subscription = $request->input('is_subscription');
+            $categories->add_port = $request->input('add_port');
+            $categories->user_id = $request->input('user_id');
+            $categories->outlet_id = $request->input('outlet_id');
+            $categories->is_sub_cat = $request->input('is_sub_cat');
+            $categories->is_priority = $request->input('is_priority');
+
+            // Store the photos if provided
+            if ($request->hasFile('cat_image')) {
+                $catImage = $request->file('cat_image')->store('storage/category_images', 'public');
+                $categories->cat_image = $catImage;
+            }
+
+            if ($request->hasFile('cat_banner')) {
+                $catBanner = $request->file('cat_banner')->store('storage/category_banners', 'public');
+                $categories->cat_banner = $catBanner;
+            }
+
+            $categories->save();
+
+            return response()->json(['message' => 'Category updated successfully'], 200);
         } else {
             return response()->json(['message' => 'Category not found'], 404);
         }

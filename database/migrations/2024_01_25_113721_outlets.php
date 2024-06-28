@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('email');
             $table->text('address');
+            $table->integer('city_id');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('registration_no');
             $table->unsignedBigInteger('user_id');

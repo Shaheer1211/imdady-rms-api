@@ -13,17 +13,19 @@ use Illuminate\Support\Facades\DB;
 
 class FoodMenusController extends BaseController
 {
-    /**
-     * Display a listing of the resource.
-     */
     protected $foodMenus;
     protected $foodMenuIngredient;
+
+    // Initialize the controller
     public function __construct()
     {
         $this->foodMenus = new FoodMenus();
         $this->foodMenuIngredient = new FoodMenuIngredient();
-
     }
+
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
         $outletId = $request->query('outlet_id');
@@ -32,6 +34,7 @@ class FoodMenusController extends BaseController
 
         $data = [];
 
+        // Build the query to get food menus with their ingredients count and additional details
         $query = DB::table('food_menuses')
             ->select(
                 'food_menuses.id',
@@ -86,6 +89,7 @@ class FoodMenusController extends BaseController
                 'users.name'
             );
 
+        // Apply filters based on the request
         if ($outletId) {
             $query->where('food_menuses.outlet_id', $outletId);
         }
@@ -98,10 +102,11 @@ class FoodMenusController extends BaseController
         // Append the full image URL to each food menu item
         $foodMenus->each(function ($foodMenu) {
             if ($foodMenu->photo) {
-                $foodMenu->photo_url = Storage::url($foodMenu->photo);
+                $foodMenu->photo_url = url(Storage::url($foodMenu->photo));
             }
         });
 
+        // If featured food menus are requested
         if ($isFeatured === 'yes') {
             $featuredQuery = DB::table('food_menuses')
                 ->select(
@@ -158,6 +163,7 @@ class FoodMenusController extends BaseController
                 )
                 ->where('food_menuses.is_new', 'yes');
 
+            // Apply filters based on the request
             if ($outletId) {
                 $featuredQuery->where('food_menuses.outlet_id', $outletId);
             }
@@ -166,7 +172,6 @@ class FoodMenusController extends BaseController
             }
 
             $featured = $featuredQuery->get();
-
             $data['featured'] = $featured;
         }
 
@@ -188,6 +193,7 @@ class FoodMenusController extends BaseController
      */
     public function store(Request $request)
     {
+        // Validate the request
         $validator = Validator::make($request->all(), [
             'code' => 'required|string|max:255',
             'name' => 'required|string|max:255',
@@ -225,11 +231,13 @@ class FoodMenusController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
+        // Handle file upload
         $photoName = null;
         if ($request->hasFile('photo')) {
-            $photoName = $request->file('photo')->store('photos', 'public');
+            $photoName = $request->file('photo')->store('storage/photos', 'public');
         }
 
+        // Create the food menu
         $foodMenu = $this->foodMenus->create(array_merge($request->all(), ['photo' => $photoName]));
         $ingredients = $request->input('ingredients', []);
         foreach ($ingredients as $ingredient) {

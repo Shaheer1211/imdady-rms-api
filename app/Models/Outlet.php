@@ -16,6 +16,7 @@ class Outlet extends Model
         'phone',
         'email',
         'address',
+        'city_id',
         'status',
         'registration_no',
         'user_id'

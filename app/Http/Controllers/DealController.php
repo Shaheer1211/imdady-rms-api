@@ -20,6 +20,7 @@ class DealController extends BaseController
     {
         $this->deal = new Deal();
     }
+
     public function index(Request $request)
     {
         // Start building the base query
@@ -55,7 +56,7 @@ class DealController extends BaseController
 
         // Fetch related food_menuses for each deal
         foreach ($deals as &$deal) {
-            $deal->deal_photo = Storage::url($deal->deal_photo);
+            $deal->deal_photo = url(Storage::url($deal->deal_photo));
             $deal->food_menuses = DB::table('deal_item')
                 ->select(
                     'food_menuses.name as menu_name',
@@ -71,8 +72,6 @@ class DealController extends BaseController
 
         return $this->sendResponse($deals, 'Deals fetched successfully.');
     }
-
-
 
     /**
      * Show the form for creating a new resource.
@@ -131,10 +130,9 @@ class DealController extends BaseController
         $deal->outlet_id = $request->input('outlet_id');
         // You may need to handle date attributes similarly if you have any
 
-
         // Store the photo if provided
         if ($request->hasFile('photo')) {
-            $photoName = $request->file('photo')->store('deals', 'public');
+            $photoName = $request->file('photo')->store('storage/deals', 'public');
             $deal->photo = $photoName;
         }
 
@@ -149,10 +147,8 @@ class DealController extends BaseController
             $dealItem->save();
         }
 
-        // exit();
         return $this->sendResponse('Deal created successfully.', $deal, 201);
     }
-
 
     /**
      * Display the specified resource.
@@ -183,7 +179,8 @@ class DealController extends BaseController
         if (!$deal) {
             return $this->sendError('Deal not found.', [], 404);
         }
-        $deal->deal_photo = Storage::url($deal->deal_photo);
+
+        $deal->deal_photo = url(Storage::url($deal->deal_photo));
 
         // Fetch related food_menuses for the deal
         $deal->food_menuses = DB::table('deal_item')
@@ -198,9 +195,12 @@ class DealController extends BaseController
             ->where('deal_item.deal_id', $deal->deal_id)
             ->get();
 
+        foreach ($deal->food_menuses as &$menu) {
+            $menu->menu_photo = url(Storage::url($menu->menu_photo));
+        }
+
         return $this->sendResponse($deal, 'Deal fetched successfully.');
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -268,7 +268,7 @@ class DealController extends BaseController
 
         // Store the photo if provided
         if ($request->hasFile('photo')) {
-            $photoName = $request->file('photo')->store('deals', 'public');
+            $photoName = $request->file('photo')->store('storage/deals', 'public');
             $deal->photo = $photoName;
         }
 
@@ -290,12 +290,23 @@ class DealController extends BaseController
         return $this->sendResponse('Deal updated successfully.', $deal);
     }
 
-
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(int $id)
     {
+        // Find the deal by its ID
+        $deal = Deal::find($id);
 
+        // Check if the deal exists
+        if (!$deal) {
+            return $this->sendError('Deal not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $deal->delete();
+        $deal->items()->delete();
+
+        return $this->sendResponse('Deal deleted successfully.');
     }
 }
