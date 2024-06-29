@@ -9,6 +9,8 @@ Route::group(['prefix' => 'rms'], function () {
             Route::post('register', 'register');
             Route::post('login', 'login');
             Route::post('logout', 'logout')->middleware(['customer', 'auth:sanctum']);
+            Route::put('update-profile', 'updateProfile')->middleware(['customer', 'auth:sanctum']);
+            Route::put('update-password', 'updatePassword')->middleware(['customer', 'auth:sanctum']);
         });
     });
     Route::group(['prefix' => 'customer'], function () {
