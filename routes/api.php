@@ -36,6 +36,18 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('foodMenuModifier/{id}', 'FoodMenuModifiersController@show');
         Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
         Route::apiResource('cart', 'CartController@index');
+        Route::get('get-outlets', 'OutletController@index');
+        Route::get('get-outlets/{id}', 'OutletController@show');
+        Route::get('cities', 'OutletController@cities');
+        Route::get('outletCities', 'OutletController@outletCities');
+        // Route::controller(OutletController::class)->group(function () {
+        //     Route::get('get-outlets', 'index');
+        //     Route::get('get-outlets/{id}', 'show');
+        //     // Route::post('add-outlet', 'store');
+        //     // Route::put('update-outlet/{id}', 'update');
+        //     Route::get('cities', 'cities');
+        //     Route::get('outletCities', 'outletCities');
+        // });
     });
     // all admin routes
     Route::group(['namespace' => 'api\auth', 'prefix' => 'admin'], function () {

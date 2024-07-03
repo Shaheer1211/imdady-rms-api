@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ordertype;
+use App\Models\Ordertype;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Api\Auth\BaseController as BaseController;
 use App\Http\Requests\StoreordertypeRequest;
