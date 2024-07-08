@@ -22,6 +22,7 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('subCategories', 'FoodMenuSubCategoriesController@index');
         Route::get('vats', 'VatsController@index');
         Route::get('foodMenus', 'FoodMenusController@index');
+        Route::get('foodMenus/{id}', 'FoodMenusController@show');
         Route::get('tables', 'TablesController@index');
         Route::get('returns', 'ReturnsController@index');
         Route::get('deposit', 'DepositController@index');
@@ -35,11 +36,16 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('foodMenuModifier', 'FoodMenuModifiersController@index');
         Route::get('foodMenuModifier/{id}', 'FoodMenuModifiersController@show');
         Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
-        Route::apiResource('cart', 'CartController@index');
+        Route::get('cart', 'CartController@index');
+        Route::post('cart', 'CartController@store');
+        Route::put('cart', 'CartController@update');
+        Route::delete('cart', 'CartController@destroy');
         Route::get('get-outlets', 'OutletController@index');
         Route::get('get-outlets/{id}', 'OutletController@show');
         Route::get('cities', 'OutletController@cities');
         Route::get('outletCities', 'OutletController@outletCities');
+        Route::post('order', 'OrdersController@store');
+        Route::get('order', 'OrdersController@index');
         // Route::controller(OutletController::class)->group(function () {
         //     Route::get('get-outlets', 'index');
         //     Route::get('get-outlets/{id}', 'show');

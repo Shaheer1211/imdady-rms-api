@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->integer('category_id')->nullable();
             $table->float('purchase_price')->nullable();
+            $table->integer('quantity')->nullable();
             $table->string('vat_percentage')->nullable();
             $table->string('tax_method')->nullable();
             $table->string('ing_vat')->nullable();

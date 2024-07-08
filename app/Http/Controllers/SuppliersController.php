@@ -42,12 +42,12 @@ class SuppliersController extends BaseController
             'name' => 'nullable|string|max:255',
             'contact_person' => 'nullable|string|max:255',
             'phone' => 'nullable|string|max:255',
-        'supplier_vat' => 'nullable|string|max:255',
-        'email' => 'nullable|string|max:255',
-        'address' => 'nullable|string|max:255',
-        'description' => 'nullable|string|max:255',
-        'user_id' => 'required|exists:users,id',
-        'outlet_id' => 'required|exists:outlets,id',
+            'supplier_vat' => 'nullable|string|max:255',
+            'email' => 'nullable|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'user_id' => 'required|exists:users,id',
+            'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
         if ($validator->fails()) {

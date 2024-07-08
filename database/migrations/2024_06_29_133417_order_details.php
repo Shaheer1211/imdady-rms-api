@@ -22,7 +22,7 @@ return new class extends Migration
             $table->float('menu_vat_percentage');
             $table->text('menu_taxes')->nullable();
             $table->float('menu_discount_value')->nullable();
-            $table->string('discount_type');
+            $table->string('discount_type')->nullable();
             $table->float('discount_amount')->nullable();
             $table->text('menu_note')->nullable();
             $table->string('item_type')->nullable();

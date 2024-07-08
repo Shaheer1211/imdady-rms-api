@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('order_consumption_menus', function(Blueprint $table) {
+        Schema::create('order_modifier_details', function(Blueprint $table) {
             $table->id();
-            $table->integer('ingredient_id');
-            $table->integer('consumption');
             $table->integer('order_id');
-            $table->integer('food_menu_id');
+            $table->integer('order_details_id');
+            $table->integer('modifier_id');
+            $table->integer('qty');
+            $table->float('sell_price');
+            $table->float('vat')->nullable();
             $table->string('del_status')->nullable()->default('Live');
+            $table->timestamps();
         });
     }
 

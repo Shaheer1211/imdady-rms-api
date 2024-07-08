@@ -58,12 +58,15 @@ class FoodMenusController extends BaseController
                 'food_menuses.del_status',
                 'food_menu_categories.category_name',
                 'food_menu_categories.cat_name_arabic',
+                'vats.name AS vat_name',
+                'vats.percentage AS vat_percentage',
                 'users.name as added_by',
                 DB::raw('COUNT(food_menu_ingredient.id) as ingredient_count')
             )
             ->leftJoin('food_menu_ingredient', 'food_menu_ingredient.food_menu_id', '=', 'food_menuses.id')
             ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menuses.category_id')
             ->join('users', 'users.id', '=', 'food_menuses.user_id')
+            ->join('vats', 'vats.id', '=', 'food_menuses.vat_id')
             ->groupBy(
                 'food_menuses.id',
                 'food_menuses.code',
@@ -86,6 +89,8 @@ class FoodMenusController extends BaseController
                 'food_menuses.del_status',
                 'food_menu_categories.category_name',
                 'food_menu_categories.cat_name_arabic',
+                'vats.name',
+                'vats.percentage',
                 'users.name'
             );
 
@@ -258,17 +263,79 @@ class FoodMenusController extends BaseController
      */
     public function show($id)
     {
-        $foodMenu = $this->foodMenus->find($id);
-        if (is_null($foodMenu)) {
+        $query = DB::table('food_menuses')
+            ->select(
+                'food_menuses.id',
+                'food_menuses.code',
+                'food_menuses.name',
+                'food_menuses.name_arabic',
+                'food_menuses.add_port_by_product',
+                'food_menuses.sale_price',
+                'food_menuses.is_discount',
+                'food_menuses.discount_amount',
+                'food_menuses.hunger_station_price',
+                'food_menuses.jahiz_price',
+                'food_menuses.tax_method',
+                'food_menuses.kot_print',
+                'food_menuses.photo',
+                'food_menuses.veg_item',
+                'food_menuses.beverage_item',
+                'food_menuses.bar_item',
+                'food_menuses.is_new',
+                'food_menuses.is_tax_fix',
+                'food_menuses.del_status',
+                'food_menu_categories.category_name',
+                'food_menu_categories.cat_name_arabic',
+                'vats.name AS vat_name',
+                'vats.percentage AS vat_percentage',
+                'users.name as added_by',
+                DB::raw('COUNT(food_menu_ingredient.id) as ingredient_count')
+            )
+            ->leftJoin('food_menu_ingredient', 'food_menu_ingredient.food_menu_id', '=', 'food_menuses.id')
+            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menuses.category_id')
+            ->join('users', 'users.id', '=', 'food_menuses.user_id')
+            ->join('vats', 'vats.id', '=', 'food_menuses.vat_id')
+            ->groupBy(
+                'food_menuses.id',
+                'food_menuses.code',
+                'food_menuses.name',
+                'food_menuses.name_arabic',
+                'food_menuses.add_port_by_product',
+                'food_menuses.sale_price',
+                'food_menuses.is_discount',
+                'food_menuses.discount_amount',
+                'food_menuses.hunger_station_price',
+                'food_menuses.jahiz_price',
+                'food_menuses.tax_method',
+                'food_menuses.kot_print',
+                'food_menuses.photo',
+                'food_menuses.veg_item',
+                'food_menuses.beverage_item',
+                'food_menuses.bar_item',
+                'food_menuses.is_new',
+                'food_menuses.is_tax_fix',
+                'food_menuses.del_status',
+                'food_menu_categories.category_name',
+                'food_menu_categories.cat_name_arabic',
+                'vats.name',
+                'vats.percentage',
+                'users.name'
+            )
+            ->where('food_menuses.id', $id);
+        $foodMenu = $query->get();
+        // print_r($foodMenu);
+        // exit();
+
+        if (is_null($foodMenu[0])) {
             return $this->sendError('Food Menu not found.');
         }
 
         // Append the full image URL to the food menu item
-        if ($foodMenu->photo) {
-            $foodMenu->photo_url = Storage::url($foodMenu->photo);
+        if ($foodMenu[0]->photo) {
+            $foodMenu[0]->photo_url = Storage::url($foodMenu[0]->photo);
         }
 
-        return response()->json($foodMenu);
+        return response()->json($foodMenu[0]);
     }
 
     /**

@@ -15,6 +15,7 @@ class Ingredient extends Model
         'name',
         'category_id',
         'purchase_price',
+        'quantity',
         'vat_percentage',
         'tax_method',
         'ing_vat',

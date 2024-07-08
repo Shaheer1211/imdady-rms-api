@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class OrderConsumptionModifiers extends Model
 {
     use HasFactory;
-    protected $table = [
+    protected $table = 'order_consumption_modifiers';
+    public $timestamps = false;
+    protected $fillable = [
         'id',
         'ingredient_id',
         'consumption',

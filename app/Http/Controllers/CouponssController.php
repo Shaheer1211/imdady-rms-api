@@ -53,7 +53,7 @@ class CouponssController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        return $this->Couponss->create($request->all());
+        return $this->couponss->create($request->all());
     }
     /**
      * Display the specified resource.
