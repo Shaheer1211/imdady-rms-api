@@ -56,8 +56,12 @@ class FoodMenusController extends BaseController
                 'food_menuses.is_new',
                 'food_menuses.is_tax_fix',
                 'food_menuses.del_status',
+                'food_menuses.category_id',
                 'food_menu_categories.category_name',
                 'food_menu_categories.cat_name_arabic',
+                'food_menuses.sub_category_id',
+                'food_menu_sub_categories.sub_category_name',
+                'food_menu_sub_categories.sub_category_name_arabic',
                 'vats.name AS vat_name',
                 'vats.percentage AS vat_percentage',
                 'users.name as added_by',
@@ -65,6 +69,7 @@ class FoodMenusController extends BaseController
             )
             ->leftJoin('food_menu_ingredient', 'food_menu_ingredient.food_menu_id', '=', 'food_menuses.id')
             ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menuses.category_id')
+            ->leftJoin('food_menu_sub_categories', 'food_menu_sub_categories.id', '=', 'food_menuses.sub_category_id')
             ->join('users', 'users.id', '=', 'food_menuses.user_id')
             ->join('vats', 'vats.id', '=', 'food_menuses.vat_id')
             ->groupBy(
@@ -87,8 +92,12 @@ class FoodMenusController extends BaseController
                 'food_menuses.is_new',
                 'food_menuses.is_tax_fix',
                 'food_menuses.del_status',
+                'food_menuses.category_id',
                 'food_menu_categories.category_name',
                 'food_menu_categories.cat_name_arabic',
+                'food_menuses.sub_category_id',
+                'food_menu_sub_categories.sub_category_name',
+                'food_menu_sub_categories.sub_category_name_arabic',
                 'vats.name',
                 'vats.percentage',
                 'users.name'
@@ -134,6 +143,7 @@ class FoodMenusController extends BaseController
                     'food_menuses.is_new',
                     'food_menuses.is_tax_fix',
                     'food_menuses.del_status',
+                    'food_menuses.category_id',
                     'food_menu_categories.category_name',
                     'food_menu_categories.cat_name_arabic',
                     'users.name as added_by',
@@ -162,6 +172,7 @@ class FoodMenusController extends BaseController
                     'food_menuses.is_new',
                     'food_menuses.is_tax_fix',
                     'food_menuses.del_status',
+                    'food_menuses.category_id',
                     'food_menu_categories.category_name',
                     'food_menu_categories.cat_name_arabic',
                     'users.name'
@@ -205,7 +216,7 @@ class FoodMenusController extends BaseController
             'name_arabic' => 'required|string|max:255',
             'add_port_by_product' => 'nullable|string|max:255',
             'category_id' => 'required|exists:food_menu_categories,id',
-            'sub_category_id' => 'required|exists:food_menu_sub_categories,id',
+            'sub_category_id' => 'nullable|exists:food_menu_sub_categories,id',
             'is_discount' => 'required|string|max:255',
             'discount_amount' => 'nullable|numeric',
             'description' => 'nullable|string',

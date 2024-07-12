@@ -43,72 +43,115 @@ class OrdersController extends BaseController
     }
     public function index()
     {
-        $data = [];
 
         $orders = DB::table('orders')
+            ->select([
+                'orders.id',
+                'orders.customer_id',
+                'orders.is_coupon',
+                'orders.coupon_id',
+                'orders.coupon_discount_amount',
+                'orders.cashier_id',
+                'orders.sale_no',
+                'orders.token_no',
+                'orders.total_items',
+                'orders.sub_total',
+                'orders.paid_amount',
+                'orders.due_amount',
+                'orders.discount',
+                'orders.vat_amount',
+                'orders.qrcode',
+                'orders.total_payable',
+                'orders.loyalty_point_amount',
+                'orders.close_time',
+                'orders.table_id',
+                'orders.total_item_discount_amount',
+                'orders.total_discount_amount',
+                'orders.sub_total_with_discount',
+                'orders.delivery_charges',
+                'orders.sale_date',
+                'orders.date_time',
+                'orders.order_time',
+                'orders.cooking_start_time',
+                'orders.cooking_end_time',
+                'orders.modified',
+                'orders.modified_vat',
+                'orders.user_id',
+                'orders.waiter_id',
+                'orders.outlet_id',
+                'orders.order_status',
+                'orders.order_type_id',
+                'orders.order_from',
+                'orders.created_at',
+                'orders.updated_at',
+                'orders.del_status',
+                'customers.name AS customer_name',
+                'customers.email AS customer_email',
+                'customers.phone AS customer_phone',
+                'customers.alternate_number AS customer_alt_num',
+                'customers.address AS customer_address',
+                'customers.customer_vat',
+                'customers.employe_card_no AS customer_emp_card_no',
+                'ordertypes.name AS order_type_name',
+                'outlets.name AS outlet_name',
+                'outlets.phone AS outlet_phone',
+                'outlets.code AS outlet_code',
+                'outlets.email AS outlet_email',
+                'outlets.address AS outlet_address',
+                'outlets.registration_no AS outlet_reg_no',
+                'users_waiter.name AS waiter_name',
+                'users_cashier.name AS cashier_name',
+                'tables.name AS table_name',
+                DB::raw(
+                    "CONCAT('[', GROUP_CONCAT(
+                CONCAT(
+                    '{ \"food_menu_name\": \"', IFNULL(food_menuses.name, ''), '\", ',
+                    '\"food_menu_code\": \"', IFNULL(food_menuses.code, ''), '\", ',
+                    '\"food_menu_id\": ', IFNULL(food_menuses.id, 'NULL'), ', ',
+                    '\"food_menu_single_discount\": ', IFNULL(order_details.single_discount, 0), ', ',
+                    '\"food_menu_qty\": ', IFNULL(order_details.qty, 0), ', ',
+                    '\"food_menu_unit_price\": ', IFNULL(order_details.menu_unit_price, 0), ', ',
+                    '\"food_menu_price_with_discount\": ', IFNULL(order_details.menu_price_with_discount, 0), ', ',
+                    '\"food_menu_note\": \"', IFNULL(order_details.menu_note, ''), '\", ',
+                    '\"food_menu_cooking_status\": \"', IFNULL(order_details.cooking_status, ''), '\", ',
+                    '\"food_menu_cooking_start_time\": \"', IFNULL(order_details.cooking_start_time, ''), '\", ',
+                    '\"food_menu_cooking_end_time\": \"', IFNULL(order_details.cooking_end_time, ''), '\", ',
+                    '\"food_menu_taxes\": \"', IFNULL(order_details.menu_taxes, ''), '\", ',
+                    '\"food_menu_item_type\": \"', IFNULL(order_details.item_type, ''), '\", ',
+                    '\"order_item_modifiers\": [', 
+                        COALESCE(order_item_modifiers.modifiers, '[]'), 
+                    '] }'
+                ) SEPARATOR ','
+            ), ']') AS order_items"
+                )
+            ])
             ->leftJoin('customers', 'customers.id', '=', 'orders.customer_id')
             ->leftJoin('ordertypes', 'ordertypes.id', '=', 'orders.order_type_id')
             ->leftJoin('outlets', 'outlets.id', '=', 'orders.outlet_id')
             ->leftJoin('users as users_waiter', 'users_waiter.id', '=', 'orders.waiter_id')
             ->leftJoin('users as users_cashier', 'users_cashier.id', '=', 'orders.cashier_id')
-            ->select([
-                'orders.id as orders_id',
-                'orders.customer_id as orders_customer_id',
-                'orders.is_coupon as orders_is_coupon',
-                'orders.coupon_id as orders_coupon_id',
-                'orders.coupon_discount_amount as orders_coupon_discount_amount',
-                'orders.cashier_id as orders_cashier_id',
-                'orders.sale_no as orders_sale_no',
-                'orders.token_no as orders_token_no',
-                'orders.total_items as orders_total_items',
-                'orders.sub_total as orders_sub_total',
-                'orders.paid_amount as orders_paid_amount',
-                'orders.due_amount as orders_due_amount',
-                'orders.discount as orders_discount',
-                'orders.vat_amount as orders_vat_amount',
-                'orders.qrcode as orders_qrcode',
-                'orders.total_payable as orders_total_payable',
-                'orders.loyalty_point_amount as orders_loyalty_point_amount',
-                'orders.close_time as orders_close_time',
-                'orders.table_id as orders_table_id',
-                'orders.total_item_discount_amount as orders_total_item_discount_amount',
-                'orders.total_discount_amount as orders_total_discount_amount',
-                'orders.sub_total_with_discount as orders_sub_total_with_discount',
-                'orders.delivery_charges as orders_delivery_charges',
-                'orders.sale_date as orders_sale_date',
-                'orders.date_time as orders_date_time',
-                'orders.order_time as orders_order_time',
-                'orders.cooking_start_time as orders_cooking_start_time',
-                'orders.cooking_end_time as orders_cooking_end_time',
-                'orders.modified as orders_modified',
-                'orders.modified_vat as orders_modified_vat',
-                'orders.user_id as orders_user_id',
-                'orders.waiter_id as orders_waiter_id',
-                'orders.outlet_id as orders_outlet_id',
-                'orders.order_status as orders_order_status',
-                'orders.order_type_id as orders_order_type_id',
-                'orders.order_from as orders_order_from',
-                'orders.created_at as orders_created_at',
-                'orders.updated_at as orders_updated_at',
-                'orders.del_status as orders_del_status',
-                'customers.name as customer_name',
-                'customers.email as customer_email',
-                'customers.phone as customer_phone',
-                'customers.alternate_number as customer_alt_num',
-                'customers.address as customer_address',
-                'customers.customer_vat as customer_vat',
-                'customers.employe_card_no as customer_emp_card_no',
-                'ordertypes.name as order_type_name',
-                'outlets.name as outlet_name',
-                'outlets.phone as outlet_phone',
-                'outlets.code as outlet_code',
-                'outlets.email as outlet_email',
-                'outlets.address as outlet_address',
-                'outlets.registration_no as outlet_reg_no',
-                'users_waiter.name as waiter_name',
-                'users_cashier.name as cashier_name'
-            ])
-            ->groupBy([
+            ->leftJoin('tables', 'tables.id', '=', 'orders.table_id')
+            ->leftJoin('order_details', 'order_details.order_id', '=', 'orders.id')
+            ->leftJoin('food_menuses', 'food_menuses.id', '=', 'order_details.food_menu_id')
+            ->leftJoin(DB::raw("(
+        SELECT 
+            order_details_id, 
+            GROUP_CONCAT(
+                CONCAT(
+                    '{ \"modifier_name\": \"', IFNULL(modifiers.name, ''), '\", ',
+                    '\"modifier_description\": \"', IFNULL(modifiers.description, ''), '\", ',
+                    '\"modifier_qty\": ', IFNULL(order_modifier_details.qty, 0), ', ',
+                    '\"modifier_sell_price\": ', IFNULL(order_modifier_details.sell_price, 0), ', ',
+                    '\"modifier_vat\": ', IFNULL(order_modifier_details.vat, 0), ', ',
+                    '\"modifier_id\": ', IFNULL(order_modifier_details.id, 'NULL'), 
+                '}'
+            ) SEPARATOR ','
+        ) AS modifiers
+        FROM order_modifier_details
+        LEFT JOIN modifiers ON modifiers.id = order_modifier_details.modifier_id
+        GROUP BY order_details_id
+    ) AS order_item_modifiers"), 'order_item_modifiers.order_details_id', '=', 'order_details.id')
+            ->groupBy(
                 'orders.id',
                 'orders.customer_id',
                 'orders.is_coupon',
@@ -163,17 +206,14 @@ class OrdersController extends BaseController
                 'outlets.address',
                 'outlets.registration_no',
                 'users_waiter.name',
-                'users_cashier.name'
-            ])
+                'users_cashier.name',
+                'tables.name'
+            )
             ->get();
 
-            $data['orders'] = $orders;
+        // $data['orders'] = $orders;
 
-            $orderDetails = $this->orderDetails::all();
-
-            $data['$orderDetails'] = $orderDetails;
-
-            return $data;
+        return $orders;
     }
 
     /**
