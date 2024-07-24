@@ -11,15 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('couponsses', function (Blueprint $table) {
+        Schema::create('payment_methods', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('code')->nullable();
-            $table->string('minimum_purchase_price')->nullable();
-            $table->string('dis_type')->nullable();
-            $table->timestamp('expired_date')->nullable();
-            $table->string('status')->nullable();
-            $table->decimal('discount_amount')->nullable();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->enum('status', ['active', 'inactive']);
             $table->string('del_status')->nullable()->default('Live');
             $table->timestamps();
         });
@@ -30,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('couponsses');
+        Schema::dropIfExists('payment_methods');
     }
 };

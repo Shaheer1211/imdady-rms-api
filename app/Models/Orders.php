@@ -47,4 +47,6 @@ class Orders extends Model
         'updated_at',
         'del_status',
     ];
+
+    public $timestamps = true;
 }

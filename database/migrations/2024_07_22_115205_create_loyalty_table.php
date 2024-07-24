@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('coupons', function (Blueprint $table) {
+        Schema::create('loyalty', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code');
-            $table->decimal('minimum_purchase_price', 8, 2);
-            $table->string('dis_type');
-            $table->date('expired_date');
-            $table->decimal('discount_amount', 8, 2);
-            $table->boolean('status')->default(1);
-            $table->string('del_status')->default('Live');
+            $table->integer('convert_points');
+            $table->decimal('per_price', 10, 2);
+            $table->decimal('percentage_order_amount', 5, 2);
+            $table->integer('minimum_point');
+            $table->boolean('status');
             $table->timestamps();
         });
     }
@@ -30,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('coupons');
+        Schema::dropIfExists('loyalty');
     }
 };

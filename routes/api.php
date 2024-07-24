@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'rms'], function () {
     // all customer routes
-    Route::group(['namespace' => 'api\auth', 'prefix' => 'customer'], function () {
+    Route::group(['namespace' => 'Api\Auth', 'prefix' => 'customer'], function () {
         Route::controller(CustomerLoginRegister::class)->group(function () {
             Route::post('register', 'register');
             Route::post('login', 'login');
@@ -56,7 +56,7 @@ Route::group(['prefix' => 'rms'], function () {
         // });
     });
     // all admin routes
-    Route::group(['namespace' => 'api\auth', 'prefix' => 'admin'], function () {
+    Route::group(['namespace' => 'Api\Auth', 'prefix' => 'admin'], function () {
         Route::controller(UserLoginRegister::class)->group(function () {
             Route::post('register', 'register');
             Route::post('login', 'login');
@@ -76,6 +76,10 @@ Route::group(['prefix' => 'rms'], function () {
     });
 
     Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {
+
+        // Route::apiResource('multiple_payments', Payment\MultiplePayments::class);
+        // Route::apiResource('payment_methods', Payment\PaymentMethods::class);
+
         Route::apiResource('categories', FoodMenuCategoriesController::class);
         Route::apiResource('ingredientCategories', IngredientCategoriesController::class);
         Route::apiResource('ingredientUnits', IngredientUnitController::class);
@@ -95,7 +99,8 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('topbanner', TopbannerController::class);
         Route::apiResource('ordertype', OrdertypeController::class);
         Route::apiResource('socialmedia', SocialmediaController::class);
-        Route::apiResource('coupons', CouponssController::class);
+        Route::apiResource('coupons', CouponsController::class);
+        Route::put('change-coupons/{id}', 'CouponsController@edit');
         Route::apiResource('customer', CustomerController::class);
         Route::apiResource('creditcard', CreditController::class);
         Route::apiResource('subscription', SubscriptionController::class);
@@ -113,6 +118,10 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('supplierpayment', SupplierpaymentController::class);
         Route::apiResource('customerDueReceives', CustomerDueReceivesController::class);
         Route::apiResource('attendance', AttendanceController::class);
+        // Route::post('add_sale', 'Api\Auth\MainScreenPOS@add_sale');
+        Route::apiResource('loyalty', LoyaltyController::class);
+        Route::apiResource('discounts', DiscountController::class);
+
     });
 
     // Route::group(['prefix' => 'admin', 'middleware' => ['module:order_management', 'auth:sanctum', 'admin']], function () {
@@ -124,6 +133,13 @@ Route::group(['prefix' => 'rms'], function () {
     //     Route::apiResource('ingredientUnits', IngredientUnitController::class);
     // });
 });
+
+        Route::apiResource('rms/admin/multiple_payments', Payment\MultiplePayments::class);
+        Route::apiResource('rms/admin/payment_methods', Payment\PaymentMethods::class);
+        Route::get('rms/admin/get-all-payment', 'Payment\PaymentMethods@getPaymentMethods');
+        Route::post('rms/customer/add_sale', 'Api\Auth\MainScreenPOS@add_sale');
+        Route::post('rms/customer/check-coupons', 'CouponsController@checkCoupon');
+
 
 Route::get('maintenance/clear-and-cache', function () {
     // Clear configurations

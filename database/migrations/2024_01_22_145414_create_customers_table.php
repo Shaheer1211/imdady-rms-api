@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('customer_vat')->nullable();
             $table->string('address');
             $table->integer('city_id');
+            $table->string('loyalty_points')->default(0);
             $table->string('employe_card_no')->nullable();
             $table->string('otp')->nullable();
             $table->string('active_status');
