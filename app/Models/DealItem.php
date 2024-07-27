@@ -17,4 +17,14 @@ class DealItem extends Model
         'item_id',
         'quantity'
     ];
+
+    public function deal()
+    {
+        return $this->belongsTo(Deal::class, 'deal_id');
+    }
+
+    public function foodMenu()
+    {
+        return $this->belongsTo(FoodMenus::class, 'item_id');
+    }
 }

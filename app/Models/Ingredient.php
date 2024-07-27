@@ -28,4 +28,8 @@ class Ingredient extends Model
         'updated_at',
         'del_status'
     ];
+
+    public function ingredientUnit() {
+        return $this->belongsTo(IngredientUnit::class, 'unit_id');
+    }
 }

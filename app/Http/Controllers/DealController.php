@@ -20,58 +20,91 @@ class DealController extends BaseController
     {
         $this->deal = new Deal();
     }
-
     public function index(Request $request)
     {
-        // Start building the base query
-        $query = DB::table('deal')
-            ->select(
-                'deal.id as deal_id',
-                'deal.name as deal_name',
-                'deal.name_arabic as deal_name_arabic',
-                'deal.code as deal_code',
-                'deal.sale_price',
-                'deal.photo as deal_photo',
-                'deal.is_discount',
-                'deal.discount_percentage',
-                'vats.name as vat_name',
-                'vats.percentage as vat_percentage',
-                'food_menu_categories.category_name',
-                'food_menu_categories.cat_name_arabic',
-                'users.name as added_by',
-            )
-            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'deal.category_id')
-            ->join('users', 'users.id', '=', 'deal.user_id')
-            ->join('vats', 'vats.id', '=', 'deal.vat_id');
+        $outletId = $request->query('outletId');
+        $categoryId = $request->query('categoryId');
+        $status = $request->query('status');
 
-        // Check if category_id is provided in the request
-        if ($request->has('category')) {
-            // Filter deals by the provided category_id
-            $category_id = $request->input('category');
-            $query->where('deal.category_id', $category_id);
+        $deals = Deal::with([
+            'dealItems.foodMenu' => function ($query) {
+                $query->with([
+                    'category',
+                    'subCategory',
+                    'vat',
+                    'user',
+                    'outlet',
+                    'ingredients.ingredient.ingredientUnit',
+                    'modifiers.modifier'
+                ]);
+            }
+        ])->where('del_status', 'Live');
+
+        if ($status) {
+            $deals->where('status', $status);
         }
 
-        // Fetch deals based on the query
-        $deals = $query->get();
-
-        // Fetch related food_menuses for each deal
-        foreach ($deals as &$deal) {
-            $deal->deal_photo = url(Storage::url($deal->deal_photo));
-            $deal->food_menuses = DB::table('deal_item')
-                ->select(
-                    'food_menuses.name as menu_name',
-                    'food_menuses.name_arabic as menu_name_arabic',
-                    'food_menuses.code as menu_code',
-                    'food_menuses.description as menu_description',
-                    'food_menuses.photo as menu_photo'
-                )
-                ->join('food_menuses', 'food_menuses.id', '=', 'deal_item.item_id')
-                ->where('deal_item.deal_id', $deal->deal_id)
-                ->get();
+        if ($outletId) {
+            $deals->where('outlet_id', $outletId);
         }
 
-        return $this->sendResponse($deals, 'Deals fetched successfully.');
+        if ($categoryId) {
+            $deals->where('category_id', $categoryId);
+        }
+
+        return response()->json($deals->get(), 200);
     }
+    // public function index(Request $request)
+    // {
+    //     // Start building the base query
+    //     $query = DB::table('deal')
+    //         ->select(
+    //             'deal.id as deal_id',
+    //             'deal.name as deal_name',
+    //             'deal.name_arabic as deal_name_arabic',
+    //             'deal.code as deal_code',
+    //             'deal.sale_price',
+    //             'deal.photo as deal_photo',
+    //             'deal.is_discount',
+    //             'deal.discount_percentage',
+    //             'vats.name as vat_name',
+    //             'vats.percentage as vat_percentage',
+    //             'food_menu_categories.category_name',
+    //             'food_menu_categories.cat_name_arabic',
+    //             'users.name as added_by',
+    //         )
+    //         ->join('food_menu_categories', 'food_menu_categories.id', '=', 'deal.category_id')
+    //         ->join('users', 'users.id', '=', 'deal.user_id')
+    //         ->join('vats', 'vats.id', '=', 'deal.vat_id');
+
+    //     // Check if category_id is provided in the request
+    //     if ($request->has('category')) {
+    //         // Filter deals by the provided category_id
+    //         $category_id = $request->input('category');
+    //         $query->where('deal.category_id', $category_id);
+    //     }
+
+    //     // Fetch deals based on the query
+    //     $deals = $query->get();
+
+    //     // Fetch related food_menuses for each deal
+    //     foreach ($deals as &$deal) {
+    //         $deal->deal_photo = url(Storage::url($deal->deal_photo));
+    //         $deal->food_menuses = DB::table('deal_item')
+    //             ->select(
+    //                 'food_menuses.name as menu_name',
+    //                 'food_menuses.name_arabic as menu_name_arabic',
+    //                 'food_menuses.code as menu_code',
+    //                 'food_menuses.description as menu_description',
+    //                 'food_menuses.photo as menu_photo'
+    //             )
+    //             ->join('food_menuses', 'food_menuses.id', '=', 'deal_item.item_id')
+    //             ->where('deal_item.deal_id', $deal->deal_id)
+    //             ->get();
+    //     }
+
+    //     return $this->sendResponse($deals, 'Deals fetched successfully.');
+    // }
 
     /**
      * Show the form for creating a new resource.
@@ -147,7 +180,7 @@ class DealController extends BaseController
             $dealItem->save();
         }
 
-        return $this->sendResponse('Deal created successfully.', $deal, 201);
+        return $this->sendResponse('Deal created successfully.', $deal);
     }
 
     /**
@@ -155,52 +188,70 @@ class DealController extends BaseController
      */
     public function show($id)
     {
-        // Retrieve the deal based on the provided ID
-        $deal = DB::table('deal')
-            ->select(
-                'deal.id as deal_id',
-                'deal.name as deal_name',
-                'deal.name_arabic as deal_name_arabic',
-                'deal.sale_price',
-                'deal.photo as deal_photo',
-                'deal.is_discount',
-                'deal.discount_percentage',
-                'vats.name as vat_name',
-                'vats.percentage',
-                'food_menu_categories.category_name',
-                'food_menu_categories.cat_name_arabic'
-            )
-            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'deal.category_id')
-            ->join('vats', 'vats.id', '=', 'deal.vat_id')
-            ->where('deal.id', $id)
-            ->first();
+        $deal = Deal::with([
+            'dealItems.foodMenu' => function ($query) {
+                $query->with([
+                    'category',
+                    'subCategory',
+                    'vat',
+                    'user',
+                    'outlet',
+                    'ingredients.ingredient.ingredientUnit',
+                    'modifiers.modifier'
+                ]);
+            }
+        ])->where('id', $id)->first();
 
-        // Check if the deal exists
-        if (!$deal) {
-            return $this->sendError('Deal not found.', [], 404);
-        }
-
-        $deal->deal_photo = url(Storage::url($deal->deal_photo));
-
-        // Fetch related food_menuses for the deal
-        $deal->food_menuses = DB::table('deal_item')
-            ->select(
-                'food_menuses.name as menu_name',
-                'food_menuses.name_arabic as menu_name_arabic',
-                'food_menuses.code as menu_code',
-                'food_menuses.description as menu_description',
-                'food_menuses.photo as menu_photo'
-            )
-            ->join('food_menuses', 'food_menuses.id', '=', 'deal_item.item_id')
-            ->where('deal_item.deal_id', $deal->deal_id)
-            ->get();
-
-        foreach ($deal->food_menuses as &$menu) {
-            $menu->menu_photo = url(Storage::url($menu->menu_photo));
-        }
-
-        return $this->sendResponse($deal, 'Deal fetched successfully.');
+        return $this->sendResponse($deal, 200);
     }
+    // public function show($id)
+    // {
+    //     // Retrieve the deal based on the provided ID
+    //     $deal = DB::table('deal')
+    //         ->select(
+    //             'deal.id as deal_id',
+    //             'deal.name as deal_name',
+    //             'deal.name_arabic as deal_name_arabic',
+    //             'deal.sale_price',
+    //             'deal.photo as deal_photo',
+    //             'deal.is_discount',
+    //             'deal.discount_percentage',
+    //             'vats.name as vat_name',
+    //             'vats.percentage',
+    //             'food_menu_categories.category_name',
+    //             'food_menu_categories.cat_name_arabic'
+    //         )
+    //         ->join('food_menu_categories', 'food_menu_categories.id', '=', 'deal.category_id')
+    //         ->join('vats', 'vats.id', '=', 'deal.vat_id')
+    //         ->where('deal.id', $id)
+    //         ->first();
+
+    //     // Check if the deal exists
+    //     if (!$deal) {
+    //         return $this->sendError('Deal not found.', [], 404);
+    //     }
+
+    //     $deal->deal_photo = url(Storage::url($deal->deal_photo));
+
+    //     // Fetch related food_menuses for the deal
+    //     $deal->food_menuses = DB::table('deal_item')
+    //         ->select(
+    //             'food_menuses.name as menu_name',
+    //             'food_menuses.name_arabic as menu_name_arabic',
+    //             'food_menuses.code as menu_code',
+    //             'food_menuses.description as menu_description',
+    //             'food_menuses.photo as menu_photo'
+    //         )
+    //         ->join('food_menuses', 'food_menuses.id', '=', 'deal_item.item_id')
+    //         ->where('deal_item.deal_id', $deal->deal_id)
+    //         ->get();
+
+    //     foreach ($deal->food_menuses as &$menu) {
+    //         $menu->menu_photo = url(Storage::url($menu->menu_photo));
+    //     }
+
+    //     return $this->sendResponse($deal, 'Deal fetched successfully.');
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -304,9 +355,9 @@ class DealController extends BaseController
         }
 
         // Delete the deal and its associated items
-        $deal->delete();
-        $deal->items()->delete();
+        $deal['del_status'] = 'deleted';
+        $deal->update();
 
-        return $this->sendResponse('Deal deleted successfully.');
+        return $this->sendResponse('Deal deleted successfully.', $deal);
     }
 }

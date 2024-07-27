@@ -32,4 +32,13 @@ class Deal extends Model
         'updated_at',
         'del_status',
     ];
+
+    public function dealItems()
+    {
+        return $this->hasMany(DealItem::class, 'deal_id');
+    }
+    public function vat()
+    {
+        return $this->belongsTo(Vats::class);
+    }
 }

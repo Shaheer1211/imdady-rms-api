@@ -132,102 +132,64 @@ class CartController extends BaseController
             return $this->sendError('Incomplete Request');
         }
 
-        $results = \DB::table('carts')
-            ->select(
-                'carts.id',
-                'carts.quantity',
-                'food_menuses.id AS food_menu_id',
-                'food_menuses.code AS food_menu_code',
-                'food_menuses.name AS food_menu_name',
-                'food_menuses.name_arabic AS food_menu_name_arabic',
-                'food_menuses.sale_price',
-                'food_menuses.is_discount',
-                'food_menuses.discount_amount AS food_menu_discount_amount',
-                'food_menuses.hunger_station_price AS food_menu_hunger_station_price',
-                'food_menuses.jahiz_price AS food_menu_jahiz_price',
-                'food_menuses.photo AS food_menu_photo',
-                'deal.id AS deal_id',
-                'deal.code AS deal_code',
-                'deal.name AS deal_name',
-                'deal.name_arabic AS deal_name_arabic',
-                'deal.sale_price AS deal_sale_price',
-                'deal.is_discount AS deal_is_discount',
-                'deal.discount_percentage AS deal_discount_percentage',
-                'deal.hunger_station_price AS deal_hunger_station_price',
-                'deal.jahiz_price AS deal_jahiz_price',
-                'deal.photo AS deal_photo',
-                'vats.name AS vat_name',
-                'vats.percentage AS vats_percentage'
-            )
-            ->leftJoin('food_menuses', 'carts.item_id', '=', 'food_menuses.id')
-            ->leftJoin('deal', 'carts.deal_id', '=', 'deal.id')
-            ->leftJoin('vats', function ($join) {
-                $join->on('vats.id', '=', \DB::raw('COALESCE(food_menuses.vat_id, deal.vat_id)'));
-            })
-            ->where('carts.session_id', '=', $request->session_id)
-            ->where('carts.outlet_id', '=', $request->outlet_id)
-            ->where(function ($query) {
-                $query->whereNotNull('carts.item_id')
-                    ->orWhereNotNull('carts.deal_id');
-            })
-            ->get();
-
-        // Fetch modifiers and their details for the cart items
-        $modifiers = \DB::table('cart_item_modifier')
-            ->select(
-                'cart_item_modifier.cart_id',
-                'cart_item_modifier.modifier_id',
-                'cart_item_modifier.quantity',
-                'modifiers.name',
-                'modifiers.price',
-                'modifiers.description',
-                'modifiers.tax_method',
-                'modifiers.tax'
-            )
-            ->join('modifiers', 'cart_item_modifier.modifier_id', '=', 'modifiers.id')
-            ->whereIn('cart_item_modifier.cart_id', $results->pluck('id'))
-            ->get()
-            ->groupBy('cart_id');
+        $carts = Cart::with([
+            'foodMenu' => function ($query) {
+                $query->with(['vat']);
+            },
+            'deal' => function ($query) {
+                $query->with(['vat']);
+            },
+            'cartItemModifiers.modifier'
+        ])
+        ->where('session_id', $request->session_id)
+        ->where('outlet_id', $request->outlet_id)
+        ->where(function ($query) {
+            $query->whereNotNull('item_id')
+                  ->orWhereNotNull('deal_id');
+        })
+        ->get();
 
         // Initialize variables for calculations
         $totalPrice = $totalDiscount = $totalDiscountedPrice = $totalVat = 0;
 
         // Perform calculations for each cart item
-        foreach ($results as $item) {
-            // Add modifiers to each cart item
-            $item->modifiers = isset($modifiers[$item->id]) ? $modifiers[$item->id] : [];
+        foreach ($carts as $cart) {
+            $itemPrice = 0;
+            $vatPercentage = 0;
 
-            if ($item->deal_id !== null) {
+            if ($cart->deal_id !== null) {
                 // Calculations when a deal is present
-                $item->photo = Storage::url($item->deal_photo);
-                $itemPrice = $item->deal_sale_price * $item->quantity;
+                $cart->photo = Storage::url($cart->deal->photo);
+                $itemPrice = $cart->deal->sale_price * $cart->quantity;
+                $vatPercentage = $cart->deal->vat->percentage;
                 $totalPrice += $itemPrice;
-                if ($item->deal_is_discount == "yes") {
-                    $itemDiscount = ($item->deal_discount_percentage / 100) * $itemPrice;
+                if ($cart->deal->is_discount == "yes") {
+                    $itemDiscount = ($cart->deal->discount_percentage / 100) * $itemPrice;
                     $totalDiscount += $itemDiscount;
                 }
-            } elseif ($item->food_menu_id !== null) {
+            } elseif ($cart->item_id !== null) {
                 // Calculations when a food menu item is present
-                $item->photo = Storage::url($item->food_menu_photo);
-                $itemPrice = $item->sale_price * $item->quantity;
+                $cart->photo = Storage::url($cart->foodMenu->photo);
+                $itemPrice = $cart->foodMenu->sale_price * $cart->quantity;
+                $vatPercentage = $cart->foodMenu->vat->percentage;
                 $totalPrice += $itemPrice;
-                if ($item->is_discount == "yes") {
-                    $itemDiscount = ($item->food_menu_discount_amount / 100) * $itemPrice;
+                if ($cart->foodMenu->is_discount == "yes") {
+                    $itemDiscount = ($cart->foodMenu->discount_amount / 100) * $itemPrice;
                     $totalDiscount += $itemDiscount;
                 }
             }
 
             // Calculate VAT for each item
-            $totalVat += ($itemPrice * $item->vats_percentage) / 100;
+            $totalVat += ($itemPrice * $vatPercentage) / 100;
 
             // Add the price of modifiers to the total price and VAT calculations
-            foreach ($item->modifiers as $modifier) {
-                $modifierPrice = $modifier->price * $modifier->quantity;
+            foreach ($cart->cartItemModifiers as $modifier) {
+                $modifierPrice = $modifier->modifier->price * $modifier->quantity;
                 $totalPrice += $modifierPrice;
-                if ($modifier->tax_method == "percentage") {
-                    $totalVat += ($modifierPrice * $modifier->tax) / 100;
+                if ($modifier->modifier->tax_method == "percentage") {
+                    $totalVat += ($modifierPrice * $modifier->modifier->tax) / 100;
                 } else {
-                    $totalVat += $modifier->tax;
+                    $totalVat += $modifier->modifier->tax;
                 }
             }
         }
@@ -240,7 +202,7 @@ class CartController extends BaseController
 
         // Prepare the response
         $response = [
-            'cart_items' => $results,
+            'cart_items' => $carts,
             'cart_details' => [
                 'total_price' => $totalPrice,
                 'total_discount' => $totalDiscount,
@@ -252,6 +214,132 @@ class CartController extends BaseController
 
         return response()->json($response);
     }
+    // public function index(Request $request)
+    // {
+    //     if (!($request->session_id || $request->outlet_id)) {
+    //         return $this->sendError('Incomplete Request');
+    //     }
+
+    //     $results = \DB::table('carts')
+    //         ->select(
+    //             'carts.id',
+    //             'carts.quantity',
+    //             'food_menuses.id AS food_menu_id',
+    //             'food_menuses.code AS food_menu_code',
+    //             'food_menuses.name AS food_menu_name',
+    //             'food_menuses.name_arabic AS food_menu_name_arabic',
+    //             'food_menuses.sale_price',
+    //             'food_menuses.is_discount',
+    //             'food_menuses.discount_amount AS food_menu_discount_amount',
+    //             'food_menuses.hunger_station_price AS food_menu_hunger_station_price',
+    //             'food_menuses.jahiz_price AS food_menu_jahiz_price',
+    //             'food_menuses.photo AS food_menu_photo',
+    //             'deal.id AS deal_id',
+    //             'deal.code AS deal_code',
+    //             'deal.name AS deal_name',
+    //             'deal.name_arabic AS deal_name_arabic',
+    //             'deal.sale_price AS deal_sale_price',
+    //             'deal.is_discount AS deal_is_discount',
+    //             'deal.discount_percentage AS deal_discount_percentage',
+    //             'deal.hunger_station_price AS deal_hunger_station_price',
+    //             'deal.jahiz_price AS deal_jahiz_price',
+    //             'deal.photo AS deal_photo',
+    //             'vats.name AS vat_name',
+    //             'vats.percentage AS vats_percentage'
+    //         )
+    //         ->leftJoin('food_menuses', 'carts.item_id', '=', 'food_menuses.id')
+    //         ->leftJoin('deal', 'carts.deal_id', '=', 'deal.id')
+    //         ->leftJoin('vats', function ($join) {
+    //             $join->on('vats.id', '=', \DB::raw('COALESCE(food_menuses.vat_id, deal.vat_id)'));
+    //         })
+    //         ->where('carts.session_id', '=', $request->session_id)
+    //         ->where('carts.outlet_id', '=', $request->outlet_id)
+    //         ->where(function ($query) {
+    //             $query->whereNotNull('carts.item_id')
+    //                 ->orWhereNotNull('carts.deal_id');
+    //         })
+    //         ->get();
+
+    //     // Fetch modifiers and their details for the cart items
+    //     $modifiers = \DB::table('cart_item_modifier')
+    //         ->select(
+    //             'cart_item_modifier.cart_id',
+    //             'cart_item_modifier.modifier_id',
+    //             'cart_item_modifier.quantity',
+    //             'modifiers.name',
+    //             'modifiers.price',
+    //             'modifiers.description',
+    //             'modifiers.tax_method',
+    //             'modifiers.tax'
+    //         )
+    //         ->join('modifiers', 'cart_item_modifier.modifier_id', '=', 'modifiers.id')
+    //         ->whereIn('cart_item_modifier.cart_id', $results->pluck('id'))
+    //         ->get()
+    //         ->groupBy('cart_id');
+
+    //     // Initialize variables for calculations
+    //     $totalPrice = $totalDiscount = $totalDiscountedPrice = $totalVat = 0;
+
+    //     // Perform calculations for each cart item
+    //     foreach ($results as $item) {
+    //         // Add modifiers to each cart item
+    //         $item->modifiers = isset($modifiers[$item->id]) ? $modifiers[$item->id] : [];
+
+    //         if ($item->deal_id !== null) {
+    //             // Calculations when a deal is present
+    //             $item->photo = Storage::url($item->deal_photo);
+    //             $itemPrice = $item->deal_sale_price * $item->quantity;
+    //             $totalPrice += $itemPrice;
+    //             if ($item->deal_is_discount == "yes") {
+    //                 $itemDiscount = ($item->deal_discount_percentage / 100) * $itemPrice;
+    //                 $totalDiscount += $itemDiscount;
+    //             }
+    //         } elseif ($item->food_menu_id !== null) {
+    //             // Calculations when a food menu item is present
+    //             $item->photo = Storage::url($item->food_menu_photo);
+    //             $itemPrice = $item->sale_price * $item->quantity;
+    //             $totalPrice += $itemPrice;
+    //             if ($item->is_discount == "yes") {
+    //                 $itemDiscount = ($item->food_menu_discount_amount / 100) * $itemPrice;
+    //                 $totalDiscount += $itemDiscount;
+    //             }
+    //         }
+
+    //         // Calculate VAT for each item
+    //         $totalVat += ($itemPrice * $item->vats_percentage) / 100;
+
+    //         // Add the price of modifiers to the total price and VAT calculations
+    //         foreach ($item->modifiers as $modifier) {
+    //             $modifierPrice = $modifier->price * $modifier->quantity;
+    //             $totalPrice += $modifierPrice;
+    //             if ($modifier->tax_method == "percentage") {
+    //                 $totalVat += ($modifierPrice * $modifier->tax) / 100;
+    //             } else {
+    //                 $totalVat += $modifier->tax;
+    //             }
+    //         }
+    //     }
+
+    //     // Calculate total discounted price
+    //     $totalDiscountedPrice = $totalPrice - $totalDiscount;
+
+    //     // Calculate total final price
+    //     $totalFinalPrice = $totalDiscountedPrice + $totalVat;
+
+    //     // Prepare the response
+    //     $response = [
+    //         'cart_items' => $results,
+    //         'cart_details' => [
+    //             'total_price' => $totalPrice,
+    //             'total_discount' => $totalDiscount,
+    //             'total_discounted_price' => $totalDiscountedPrice,
+    //             'total_final_price' => $totalFinalPrice,
+    //             'total_vat' => $totalVat,
+    //         ],
+    //     ];
+
+    //     return response()->json($response);
+    // }
 
     /**
      * Show the form for creating a new resource.

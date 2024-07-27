@@ -88,6 +88,7 @@ Route::group(['prefix' => 'rms'], function () {
         Route::apiResource('subCategories', FoodMenuSubCategoriesController::class);
         Route::apiResource('vats', VatsController::class);
         Route::apiResource('foodMenus', FoodMenusController::class);
+        Route::put('updateFoodMenus/{id}', 'FoodMenusController@updateFoodMenu');
         Route::apiResource('foodMenuModifiers', FoodMenuModifiersController::class);
         Route::apiResource('tables', TablesController::class);
         Route::apiResource('returns', ReturnsController::class);
@@ -121,6 +122,7 @@ Route::group(['prefix' => 'rms'], function () {
         // Route::post('add_sale', 'Api\Auth\MainScreenPOS@add_sale');
         Route::apiResource('loyalty', LoyaltyController::class);
         Route::apiResource('discounts', DiscountController::class);
+        Route::get('get_sale/{id}', 'Api\Auth\MainScreenPOS@fetchOrderWithDetails');
 
     });
 

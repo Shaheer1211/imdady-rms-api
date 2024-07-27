@@ -37,6 +37,7 @@ return new class extends Migration
             $table->string('beverage_item')->nullable()->default('Beverage No');
             $table->string('bar_item')->nullable()->default('Bar No');
             $table->string('stock')->default('enable');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('is_new')->default('no');
             $table->string('is_tax_fix')->default('no');
             $table->string('del_status')->nullable()->default('Live');

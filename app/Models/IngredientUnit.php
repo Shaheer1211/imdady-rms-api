@@ -20,4 +20,8 @@ class IngredientUnit extends Model
         'updated_at',
         'del_status'
     ];
+
+    public function ingredient() {
+        return $this->hasMany(Ingredient::class, 'unit_id');
+    }
 }

@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class CartItemModifier extends Model
 {
     use HasFactory;
+
     protected $table = 'cart_item_modifier';
+
     protected $fillable = [
         'id',
         'cart_id',
@@ -18,4 +20,9 @@ class CartItemModifier extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function modifier()
+    {
+        return $this->belongsTo(Modifiers::class, 'modifier_id');
+    }
 }
