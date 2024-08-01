@@ -20,7 +20,7 @@ class IngredientUnitController extends BaseController
     }
     public function index()
     {
-        return $this->ingredientUnits->all();
+        return IngredientUnit::where('del_status', 'Live')->get();
     }
 
     /**
@@ -91,8 +91,20 @@ class IngredientUnitController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IngredientUnit $ingredientUnit)
+    public function destroy(int $id)
     {
-        //
+        // Find the deal by its ID
+        $ingUnit = IngredientUnit::find($id);
+
+        // Check if the deal exists
+        if (!$ingUnit) {
+            return $this->sendError('Ingredient Unit not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $ingUnit['del_status'] = 'deleted';
+        $ingUnit->update();
+
+        return $this->sendResponse('Ingredient Unit successfully.', $ingUnit);
     }
 }

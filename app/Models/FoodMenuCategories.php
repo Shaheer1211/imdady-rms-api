@@ -25,6 +25,7 @@ class FoodMenuCategories extends Model
         'outlet_id',
         'is_sub_cat',
         'is_priority',
+        'del_status'
     ];
 
     protected $dates = ['deleted_at'];

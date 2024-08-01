@@ -33,18 +33,18 @@ class MultiplePayment extends Model
         $this->del_status = 'Live';
         $this->save();
     }
-     public function getDeletedAtColumn()
+    public function getDeletedAtColumn()
     {
         return 'del_status'; // Use 'del_status' for soft delete check
     }
 
-     public function getDeletedAt()
+    public function getDeletedAt()
     {
         return null;
     }
 
     public function paymentMethod()
-{
-    return $this->belongsTo(Payments::class, 'payment_method_id', 'id');
-}
+    {
+        return $this->belongsTo(Payments::class, 'payment_method_id', 'id');
+    }
 }

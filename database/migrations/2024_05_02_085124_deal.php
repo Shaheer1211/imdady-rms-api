@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->integer("user_id");
             $table->integer("outlet_id");
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->string('del_status')->nullable()->default('Live');
             $table->timestamps();
         });

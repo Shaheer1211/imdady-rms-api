@@ -21,4 +21,10 @@ class FoodMenuSubCategories extends Model
         "updated_at",
         "del_status"
     ];
+    function category(){
+        return $this->belongsTo(FoodMenuCategories::class, 'category_id');
+    }
+    function user(){
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

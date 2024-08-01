@@ -43,10 +43,37 @@ class Orders extends Model
         'order_status',
         'order_type_id',
         'order_from',
+        'main_screen_discount_type',
+        'main_screen_discount',
+        'card_discount_type',
+        'card_discount',
+        'payment_method_id',
+        'multiple_payments',
+        'order_menu_taxes',
         'created_at',
         'updated_at',
         'del_status',
     ];
 
+    public function orderDetails()
+    {
+        return $this->hasMany(OrderDetails::class, 'order_id');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo(Payments::class, 'payment_method_id');
+    }
+
     public $timestamps = true;
+
+    protected $casts = [
+        'multiple_payments' => 'array',
+        'order_menu_taxes' => 'array',
+    ];
 }

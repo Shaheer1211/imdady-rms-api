@@ -21,12 +21,12 @@ class IngredientController extends BaseController
     }
     public function index()
     {
-        // return $this->ingredients->all();
-        $ingredients = DB::table('ingredients')
-            ->join('ingredient_categories', 'ingredient_categories.id', '=', 'ingredients.category_id')
-            ->join('ingredient_units', 'ingredient_units.id', '=', 'ingredients.unit_id')
-            ->join('users', 'users.id', '=', 'ingredients.user_id')
-            ->select('ingredients.*', 'ingredient_categories.category_name', 'ingredient_units.unit_name', 'users.name as added_by')
+        $ingredients = Ingredient::with([
+            'ingredientCategory',
+            'ingredientUnit',
+            'user'
+        ])
+            ->where('del_status', 'Live')
             ->get();
 
         return $ingredients;
@@ -73,13 +73,11 @@ class IngredientController extends BaseController
      */
     public function show($id)
     {
-        $ingredient = DB::table('ingredients')
-            ->join('ingredient_categories', 'ingredient_categories.id', '=', 'ingredients.category_id')
-            ->join('ingredient_units', 'ingredient_units.id', '=', 'ingredients.unit_id')
-            ->join('users', 'users.id', '=', 'ingredients.user_id')
-            ->select('ingredients.*', 'ingredient_categories.category_name', 'ingredient_units.unit_name', 'users.name as added_by')
-            ->where('ingredients.id', $id)
-            ->first();
+        $ingredient = Ingredient::with([
+            'ingredientCategory',
+            'ingredientUnit',
+            'user'
+        ])->where('id', $id)->first();
 
         if (is_null($ingredient)) {
             return response()->json(['error' => 'Ingredient not found.'], 404);
@@ -114,8 +112,21 @@ class IngredientController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Ingredient $ingredient)
+    public function destroy(int $id)
     {
-        //
+        
+        // Find the deal by its ID
+        $ing = Ingredient::find($id);
+
+        // Check if the deal exists
+        if (!$ing) {
+            return $this->sendError('Ingredient not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $ing['del_status'] = 'deleted';
+        $ing->update();
+
+        return $this->sendResponse('Deal deleted successfully.', $ing);
     }
 }

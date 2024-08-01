@@ -20,4 +20,8 @@ class Tables extends Model
         'updated_at',
         'del_status'
     ];
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

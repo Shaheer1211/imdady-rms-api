@@ -11,16 +11,15 @@ class OrderDetails extends Model
     protected $fillable = [
         'id',
         'food_menu_id',
-        'single_discount',
+        'name',
+        'name_arabic',
+        'is_tax_fix',
         'qty',
         'menu_unit_price',
         'menu_price_with_discount',
         'menu_unit_price_with_vat',
-        'menu_vat_percentage',
         'menu_taxes',
-        'menu_discount_value',
         'discount_type',
-        'discount_amount',
         'menu_note',
         'item_type',
         'cooking_status',
@@ -30,5 +29,20 @@ class OrderDetails extends Model
         'del_status',
         'created_at',
         'updated_at',
+    ];
+
+    public function foodMenu()
+    {
+        return $this->belongsTo(FoodMenus::class, 'food_menu_id');
+    }
+
+    public function modifiers()
+    {
+        return $this->belongsToMany(Modifiers::class, 'order_modifier_details', 'order_details_id', 'modifier_id')
+                    ->withPivot('qty');
+    }
+
+    protected $casts = [
+        'menu_taxes' => 'array', // Cast to array
     ];
 }

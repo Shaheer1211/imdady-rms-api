@@ -27,6 +27,7 @@ class DealController extends BaseController
         $status = $request->query('status');
 
         $deals = Deal::with([
+            'category', // Add this line to include the deal's category
             'dealItems.foodMenu' => function ($query) {
                 $query->with([
                     'category',
@@ -37,7 +38,9 @@ class DealController extends BaseController
                     'ingredients.ingredient.ingredientUnit',
                     'modifiers.modifier'
                 ]);
-            }
+            },
+            'user',
+            'outlet'
         ])->where('del_status', 'Live');
 
         if ($status) {
@@ -267,23 +270,23 @@ class DealController extends BaseController
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'name_arabic' => 'required|string|max:255',
-            'category_id' => 'required|exists:food_menu_categories,id',
-            'is_discount' => 'required|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'name_arabic' => 'nullable|string|max:255',
+            'category_id' => 'nullable|exists:food_menu_categories,id',
+            'is_discount' => 'nullable|string|max:255',
             'discount_percentage' => 'nullable|numeric',
-            'description' => 'required|string',
-            'sale_price' => 'required|numeric',
-            'hunger_station_price' => 'required|numeric',
-            'jahiz_price' => 'required|numeric',
-            'tax_method' => 'required|string|max:255',
-            'kot_print' => 'required|string|max:255',
-            'vat_id' => 'required|exists:vats,id',
-            'user_id' => 'required|exists:users,id',
-            'outlet_id' => 'required|exists:outlets,id',
+            'description' => 'nullable|string',
+            'sale_price' => 'nullable|numeric',
+            'hunger_station_price' => 'nullable|numeric',
+            'jahiz_price' => 'nullable|numeric',
+            'tax_method' => 'nullable|string|max:255',
+            'kot_print' => 'nullable|string|max:255',
+            'vat_id' => 'nullable|exists:vats,id',
+            'user_id' => 'nullable|exists:users,id',
+            'outlet_id' => 'nullable|exists:outlets,id',
             'photo' => 'nullable|file',
-            'items' => 'required|array',
+            'items' => 'nullable|array',
             'del_status' => 'nullable'
         ]);
 

@@ -10,7 +10,7 @@ class Loyalty extends Model
     use HasFactory;
 
     protected $table = 'loyalty';
-    
+
     protected $fillable = [
         'name',
         'convert_points',

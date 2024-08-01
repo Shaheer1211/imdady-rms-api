@@ -22,10 +22,15 @@ class IngredientCategoriesController extends BaseController
     }
     public function index()
     {
-        $ingredientCategories = DB::table('ingredient_categories')
-            ->join('users', 'users.id', '=', 'ingredient_categories.user_id')
-            ->select('ingredient_categories.*', 'users.name as added_by')
+        // $ingredientCategories = DB::table('ingredient_categories')
+        //     ->join('users', 'users.id', '=', 'ingredient_categories.user_id')
+        //     ->select('ingredient_categories.*', 'users.name as added_by')
+        //     ->get();
+        // return $ingredientCategories;
+        $ingredientCategories = IngredientCategories::with('user')
+            ->where('del_status', 'Live')
             ->get();
+
         return $ingredientCategories;
     }
 
@@ -97,8 +102,20 @@ class IngredientCategoriesController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(IngredientCategories $ingredientCategories)
+    public function destroy(int $id)
     {
-        //
+        // Find the deal by its ID
+        $ingCat = IngredientCategories::find($id);
+
+        // Check if the deal exists
+        if (!$ingCat) {
+            return $this->sendError('Ingredient Category not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $ingCat['del_status'] = 'deleted';
+        $ingCat->update();
+
+        return $this->sendResponse('Ingredient Category successfully.', $ingCat);
     }
 }

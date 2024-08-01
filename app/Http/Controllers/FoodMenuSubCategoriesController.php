@@ -22,14 +22,10 @@ class FoodMenuSubCategoriesController extends BaseController
     }
     public function index(Request $request)
     {
-        $category_id = $request->query('category_id');
-        $results = DB::table('food_menu_sub_categories')
-            ->select('food_menu_sub_categories.*', 'food_menu_categories.category_name AS category_name', 'food_menu_categories.cat_name_arabic AS category_name_ar', 'users.name as added_by')
-            ->join('food_menu_categories', 'food_menu_categories.id', '=', 'food_menu_sub_categories.category_id')
-            ->join('users', 'users.id', '=', 'food_menu_sub_categories.user_id');
-        if ($category_id) {
-            $results->where('food_menu_sub_categories.category_id', '=', $category_id);
-        }
+        $results = FoodMenuSubCategories::with([
+            'category',
+            'user'
+        ])->where('del_status', 'Live');
         return $results->get();
     }
 
@@ -106,8 +102,20 @@ class FoodMenuSubCategoriesController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(FoodMenuSubCategories $foodMenuSubCategories)
+    public function destroy(int $id)
     {
-        //
+        // Find the deal by its ID
+        $subCat = FoodMenuSubCategories::find($id);
+
+        // Check if the deal exists
+        if (!$subCat) {
+            return $this->sendError('Sub Category not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $subCat['del_status'] = 'deleted';
+        $subCat->update();
+
+        return $this->sendResponse('Deal deleted successfully.', $subCat);
     }
 }

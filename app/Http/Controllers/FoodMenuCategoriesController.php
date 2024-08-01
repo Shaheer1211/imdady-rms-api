@@ -21,7 +21,7 @@ class FoodMenuCategoriesController extends BaseController
     public function index(Request $request)
     {
         // Start with the query builder instance
-        $query = $this->categories->newQuery();
+        $query = FoodMenuCategories::where('del_status', 'Live');
 
         // Apply filters if they are present in the request
         if ($request->has('status')) {
@@ -147,14 +147,14 @@ class FoodMenuCategoriesController extends BaseController
                 'is_sub_cat' => 'nullable|boolean',
                 'is_priority' => 'nullable|integer',
             ]);
-    
+
             if ($validator->fails()) {
                 return $this->sendError('Validation Error.', $validator->errors());
             }
-    
+
             // Log the request payload for debugging
             error_log('Request payload: ' . print_r($request->all(), true));
-    
+
             // Assign each field
             $categories->category_name = $request->input('category_name', $categories->category_name);
             $categories->cat_name_arabic = $request->input('cat_name_arabic', $categories->cat_name_arabic);
@@ -168,34 +168,34 @@ class FoodMenuCategoriesController extends BaseController
             $categories->outlet_id = $request->input('outlet_id', $categories->outlet_id);
             $categories->is_sub_cat = $request->input('is_sub_cat', $categories->is_sub_cat);
             $categories->is_priority = $request->input('is_priority', $categories->is_priority);
-    
+
             // Log the category before saving
             error_log('Category before saving: ' . print_r($categories->toArray(), true));
-    
+
             // Store the photos if provided
             if ($request->hasFile('cat_image')) {
                 $catImage = $request->file('cat_image')->store('storage/category_images', 'public');
                 $categories->cat_image = $catImage;
             }
-    
+
             if ($request->hasFile('cat_banner')) {
                 $catBanner = $request->file('cat_banner')->store('storage/category_banners', 'public');
                 $categories->cat_banner = $catBanner;
             }
-    
+
             // Save the category
             $categories->save();
-    
+
             // Log the category after saving
             error_log('Category after saving: ' . print_r($categories->toArray(), true));
-    
+
             return response()->json(['message' => 'Category updated successfully', 'category' => $categories], 200);
         } else {
             return response()->json(['message' => 'Category not found'], 404);
         }
     }
-    
-    
+
+
 
 
     /**

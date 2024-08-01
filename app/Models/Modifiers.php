@@ -22,4 +22,18 @@ class Modifiers extends Model
         'updated_at',
         'del_status'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function ingredients()
+    {
+        return $this->hasManyThrough(Ingredient::class, ModifierIngredient::class, 'modifier_id', 'id', 'id', 'ingredient_id');
+    }
+    public function modifierIngredients()
+{
+    return $this->hasMany(ModifierIngredient::class, 'modifier_id');
+}
 }

@@ -19,4 +19,12 @@ class IngredientCategories extends Model
         'updated_at',
         'del_status'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function ingredient() {
+        return $this->hasMany(Ingredient::class, 'unit_id');
+    }
 }

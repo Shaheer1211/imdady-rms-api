@@ -24,14 +24,13 @@ class ModifiersController extends BaseController
     }
     public function index()
     {
-        $results = DB::table('modifiers')
-            ->select('modifiers.id', 'modifiers.name', 'modifiers.price', 'modifiers.description', 'users.name as added_by', DB::raw('COUNT(modifiers_ingredient.id) as ingredient_count'))
-            ->leftJoin('modifiers_ingredient', 'modifiers.id', '=', 'modifiers_ingredient.modifier_id')
-            ->join('users', 'users.id', '=', 'modifiers.user_id')
-            ->groupBy('modifiers.id', 'modifiers.name', 'modifiers.price', 'modifiers.description', 'users.name')
-            ->get();
-        return $results;
+        $results = Modifiers::with([
+            'modifierIngredients.ingredient', // Nested eager loading
+            'user'
+        ])->where('del_status', 'Live')->get();
+        return response()->json($results);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -113,8 +112,17 @@ class ModifiersController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Modifiers $modifiers)
+    public function destroy(int $id)
     {
-        //
+        $modifier = Modifiers::find($id);
+
+        if (!$modifier) {
+            return $this->sendError('Modifier not found.', [], 404);
+        }
+
+        $modifier['del_status'] = 'deleted';
+        $modifier->update();
+
+        return $this->sendResponse('Modifier deleted successfully.', $modifier);
     }
 }

@@ -29,7 +29,19 @@ class Ingredient extends Model
         'del_status'
     ];
 
-    public function ingredientUnit() {
+    public function ingredientUnit()
+    {
         return $this->belongsTo(IngredientUnit::class, 'unit_id');
     }
+
+    public function ingredientCategory()
+    {
+        return $this->belongsTo(IngredientCategories::class, 'category_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
+

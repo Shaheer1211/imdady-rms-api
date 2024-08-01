@@ -58,6 +58,11 @@ class FoodMenusController extends BaseController
 
         $data['foodMenus'] = $foodMenusQuery->get();
 
+        $data['foodMenus']->each(function ($foodMenu) {
+            $foodMenu->photo_url = url(Storage::url($foodMenu->photo));
+        });
+
+
         if ($isFeatured === 'yes') {
             $featuredQuery = FoodMenus::with([
                 'category',
@@ -139,13 +144,13 @@ class FoodMenusController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        // print_r($request->all());
-        // exit();
-
         // Handle file upload
         $photoName = null;
         if ($request->hasFile('photo')) {
-            $photoName = $request->file('photo')->store('storage/photos', 'public');
+            $imageName = $request->photo->getClientOriginalExtension();
+            $image = rand() . '.' . $imageName;
+            $request->photo->move('storage/foodmenu', $image);
+            $photoName = 'foodmenu/' . $image;
         }
 
         // Create the food menu
@@ -238,7 +243,7 @@ class FoodMenusController extends BaseController
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
-        
+
 
         // Find the food menu
         $foodMenu = $this->foodMenus->find($id);
@@ -286,8 +291,20 @@ class FoodMenusController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(FoodMenus $foodMenus)
+    public function destroy(int $id)
     {
-        //
+        // Find the deal by its ID
+        $foodMenu = FoodMenus::find($id);
+
+        // Check if the deal exists
+        if (!$foodMenu) {
+            return $this->sendError('Item not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $foodMenu['del_status'] = 'deleted';
+        $foodMenu->update();
+
+        return $this->sendResponse('Deal deleted successfully.', $foodMenu);
     }
 }

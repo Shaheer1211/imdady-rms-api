@@ -38,8 +38,8 @@ Route::group(['prefix' => 'rms'], function () {
         Route::get('foodmenuWithModifier/{id}', 'FoodMenuCustomerController@show');
         Route::get('cart', 'CartController@index');
         Route::post('cart', 'CartController@store');
-        Route::put('cart', 'CartController@update');
-        Route::delete('cart', 'CartController@destroy');
+        Route::put('cart/{id}', 'CartController@update');
+        Route::delete('cart/{id}', 'CartController@destroy');
         Route::get('get-outlets', 'OutletController@index');
         Route::get('get-outlets/{id}', 'OutletController@show');
         Route::get('cities', 'OutletController@cities');
@@ -70,6 +70,7 @@ Route::group(['prefix' => 'rms'], function () {
             Route::get('get-outlets/{id}', 'show');
             Route::post('add-outlet', 'store');
             Route::put('update-outlet/{id}', 'update');
+            Route::delete('delete-outlet/{id}', 'destroy');
             Route::get('cities', 'cities');
             Route::get('outletCities', 'outletCities');
         });
@@ -136,11 +137,13 @@ Route::group(['prefix' => 'rms'], function () {
     // });
 });
 
-        Route::apiResource('rms/admin/multiple_payments', Payment\MultiplePayments::class);
-        Route::apiResource('rms/admin/payment_methods', Payment\PaymentMethods::class);
-        Route::get('rms/admin/get-all-payment', 'Payment\PaymentMethods@getPaymentMethods');
-        Route::post('rms/customer/add_sale', 'Api\Auth\MainScreenPOS@add_sale');
-        Route::post('rms/customer/check-coupons', 'CouponsController@checkCoupon');
+Route::apiResource('rms/admin/multiple_payments', Payment\MultiplePayments::class);
+Route::apiResource('rms/admin/payment_methods', Payment\PaymentMethods::class);
+Route::get('rms/admin/get-all-payment', 'Payment\PaymentMethods@getPaymentMethods');
+Route::get('rms/customer/fetch_order/{id}', 'Api\Auth\MainScreenPOS@fetchOrderWithDetails');
+Route::get('rms/customer/fetch_all_order', 'Api\Auth\MainScreenPOS@fetchAllOrder');
+Route::post('rms/customer/add_sale', 'Api\Auth\MainScreenPOS@add_sale');
+Route::post('rms/customer/check-coupons', 'CouponsController@checkCoupon');
 
 
 Route::get('maintenance/clear-and-cache', function () {

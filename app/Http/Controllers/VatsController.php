@@ -15,12 +15,13 @@ class VatsController extends BaseController
      * Display a listing of the resource.
      */
     protected $vats;
-    public function __construct(){
-        $this->vats = new Vats(); 
+    public function __construct()
+    {
+        $this->vats = new Vats();
     }
     public function index()
     {
-        return $this->vats->all();
+        return Vats::where('del_status', 'Live')->get();
     }
 
     /**
@@ -37,14 +38,14 @@ class VatsController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'=> 'nullable|string|max:255',
-            'percentage'=> 'nullable|numeric',
+            'name' => 'nullable|string|max:255',
+            'percentage' => 'nullable|numeric',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());       
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
         }
 
         return $this->vats->create($request->all());
@@ -89,8 +90,20 @@ class VatsController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Vats $vats)
+    public function destroy(int $id)
     {
-        //
+        // Find the deal by its ID
+        $vat = Vats::find($id);
+
+        // Check if the deal exists
+        if (!$vat) {
+            return $this->sendError('Vat not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $vat['del_status'] = 'deleted';
+        $vat->update();
+
+        return $this->sendResponse('Deal deleted successfully.', $vat);
     }
 }

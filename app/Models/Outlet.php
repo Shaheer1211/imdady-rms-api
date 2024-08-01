@@ -23,4 +23,8 @@ class Outlet extends Model
     ];
 
     protected $dates = ['deleted_at'];
+    public function ordertypes()
+    {
+        return $this->belongsToMany(Ordertype::class, 'outlet_by_ordertype', 'outlet_id', 'ordertype_id');
+    }
 }

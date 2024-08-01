@@ -19,29 +19,55 @@ class OutletController extends BaseController
      */
     public function index(Request $request)
     {
-        $status = $request->query('status');
-        $cityId = $request->query('cityId');
-        $orderTypeId = $request->query('orderTypeId');
-        
-        $query = DB::table('outlets');
-
-        if ($orderTypeId) {
-            $query->join('outlet_by_ordertype', 'outlets.id', '=', 'outlet_by_ordertype.outlet_id')
-                  ->where('outlet_by_ordertype.ordertype_id', $orderTypeId);
-        }
-
-        if ($status) {
-            $query->where('status', $status);
-        }
-
-        if ($cityId) {
-            $query->where('city_id', $cityId);
-        }
-
-        $outlets = $query->get();
-
+        $outlets = Outlet::with('ordertypes')
+            ->where('del_status', 'Live')
+            ->get()
+            ->map(function ($outlets) {
+                return [
+                    "id" => $outlets->id,
+                    "code" => $outlets->code,
+                    "name" => $outlets->name,
+                    "phone" => $outlets->phone,
+                    "email" => $outlets->email,
+                    "address" => $outlets->address,
+                    "city_id" => $outlets->city_id,
+                    "status" => $outlets->status,
+                    "registration_no" => $outlets->registration_no,
+                    "user_id" => $outlets->user_id,
+                    "del_status" => $outlets->del_status,
+                    "created_at" => $outlets->created_at,
+                    "updated_at" => $outlets->updated_at,
+                    "deleted_at" => $outlets->deleted_at,
+                    'order_type' => $outlets->ordertypes
+                ];
+            });
         return response()->json($outlets);
     }
+    // public function index(Request $request)
+    // {
+    //     $status = $request->query('status');
+    //     $cityId = $request->query('cityId');
+    //     $orderTypeId = $request->query('orderTypeId');
+
+    //     $query = DB::table('outlets')->where('del_status', 'Live');
+
+    //     if ($orderTypeId) {
+    //         $query->join('outlet_by_ordertype', 'outlets.id', '=', 'outlet_by_ordertype.outlet_id')
+    //               ->where('outlet_by_ordertype.ordertype_id', $orderTypeId);
+    //     }
+
+    //     if ($status) {
+    //         $query->where('status', $status);
+    //     }
+
+    //     if ($cityId) {
+    //         $query->where('city_id', $cityId);
+    //     }
+
+    //     $outlets = $query->get();
+
+    //     return response()->json($outlets);
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -74,11 +100,11 @@ class OutletController extends BaseController
 
         $orderType = $request->order_type;
 
-        foreach($orderType as $type) {
+        foreach ($orderType as $type) {
             $type['outlet_id'] = $createdOutlet->id;
             OutletByOrdertype::create($type);
         }
-        
+
         return $createdOutlet;
     }
 
@@ -87,7 +113,28 @@ class OutletController extends BaseController
      */
     public function show($id)
     {
-        $outlet = Outlet::find($id);
+        $outlet = Outlet::with('ordertypes')
+            ->where('id', $id)
+            ->get()
+            ->map(function ($outlets) {
+                return [
+                    "id" => $outlets->id,
+                    "code" => $outlets->code,
+                    "name" => $outlets->name,
+                    "phone" => $outlets->phone,
+                    "email" => $outlets->email,
+                    "address" => $outlets->address,
+                    "city_id" => $outlets->city_id,
+                    "status" => $outlets->status,
+                    "registration_no" => $outlets->registration_no,
+                    "user_id" => $outlets->user_id,
+                    "del_status" => $outlets->del_status,
+                    "created_at" => $outlets->created_at,
+                    "updated_at" => $outlets->updated_at,
+                    "deleted_at" => $outlets->deleted_at,
+                    'order_type' => $outlets->ordertypes
+                ];
+            });
 
         if (is_null($outlet)) {
             return $this->sendError('Outlet not found.');
@@ -114,9 +161,18 @@ class OutletController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Outlet $outlet)
+    public function destroy(int $id)
     {
-        //
+        $outlet = Outlet::find($id);
+
+        if (!$outlet) {
+            return $this->sendError('Outlet not found.', [], 404);
+        }
+
+        $outlet['del_status'] = 'deleted';
+        $outlet->update();
+
+        return $this->sendResponse('Outlet deleted successfully.', $outlet);
     }
     public function ordertype($id)
     {
@@ -146,24 +202,24 @@ class OutletController extends BaseController
             ->map(function ($item) {
                 return array_map(function ($value) {
                     return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
-                }, (array)$item);
+                }, (array) $item);
             });
-    
+
         return response()->json($query);
     }
     public function outletCities()
     {
         $query = DB::table('outlets')
-        ->select([
-            'outlets.city_id',
-            'cities.name_en',
-            'cities.name_ar',
-            DB::raw('COUNT(outlets.city_id) AS count')
-        ])
-        ->join('cities', 'outlets.city_id', '=', 'cities.city_id')
-        ->groupBy('outlets.city_id', 'cities.name_en', 'cities.name_ar')
-        ->get();
+            ->select([
+                    'outlets.city_id',
+                    'cities.name_en',
+                    'cities.name_ar',
+                    DB::raw('COUNT(outlets.city_id) AS count')
+                ])
+            ->join('cities', 'outlets.city_id', '=', 'cities.city_id')
+            ->groupBy('outlets.city_id', 'cities.name_en', 'cities.name_ar')
+            ->get();
 
-    return $query;
+        return $query;
     }
 }

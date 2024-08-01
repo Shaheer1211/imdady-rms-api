@@ -15,15 +15,16 @@ class TablesController extends BaseController
      * Display a listing of the resource.
      */
     protected $tables;
-    public function __construct(){
-        $this->tables = new Tables(); 
+    public function __construct()
+    {
+        $this->tables = new Tables();
     }
     public function index()
     {
-        $tables = DB::table('tables')
-    ->join('users', 'users.id', '=', 'tables.user_id')
-    ->select('tables.*', 'users.name as added_by')
-    ->get();
+        $tables = Tables::with(['user'])
+        ->where('del_status', 'Live')
+        ->get();
+
         return $tables;
     }
 
@@ -41,16 +42,16 @@ class TablesController extends BaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'=> 'nullable|string|max:255',
-            'sit_capacity'=> 'nullable|string|max:255',
-            'position'=> 'nullable|string|max:255',
-            'description'=> 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
+            'sit_capacity' => 'nullable|string|max:255',
+            'position' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:255',
             'user_id' => 'required|exists:users,id',
             'outlet_id' => 'required|exists:outlets,id',
             'del_status' => 'nullable'
         ]);
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());       
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
         }
 
         return $this->tables->create($request->all());
@@ -96,8 +97,19 @@ class TablesController extends BaseController
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Tables $tables)
+    public function destroy(int $id)
     {
-        //
+       $table = Tables::find($id);
+
+        // Check if the deal exists
+        if (!$table) {
+            return $this->sendError('Table not found.', [], 404);
+        }
+
+        // Delete the deal and its associated items
+        $table['del_status'] = 'deleted';
+        $table->update();
+
+        return $this->sendResponse('Table successfully.', $table);
     }
 }

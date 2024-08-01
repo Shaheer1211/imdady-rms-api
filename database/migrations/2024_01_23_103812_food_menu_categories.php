@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -27,6 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('outlet_id');
             $table->boolean('is_sub_cat')->default(false);
             $table->integer('is_priority')->default(0);
+            $table->string('del_status')->default('Live');
             $table->timestamps();
             $table->softDeletes();
         });

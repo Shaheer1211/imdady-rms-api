@@ -28,6 +28,7 @@ class Deal extends Model
         'photo',
         'user_id',
         'outlet_id',
+        'status',
         'created_at',
         'updated_at',
         'del_status',
@@ -40,5 +41,17 @@ class Deal extends Model
     public function vat()
     {
         return $this->belongsTo(Vats::class);
+    }
+    public function category()
+    {
+        return $this->belongsTo(FoodMenuCategories::class, 'category_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    public function outlet()
+    {
+        return $this->belongsTo(Outlet::class, 'outlet_id');
     }
 }

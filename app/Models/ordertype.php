@@ -16,4 +16,8 @@ class Ordertype extends Model
         'created_at',
         'updated_at'
     ];
+    public function outlets()
+    {
+        return $this->belongsToMany(Outlet::class, 'outlet_by_ordertype', 'ordertype_id', 'outlet_id');
+    }
 }
