@@ -210,48 +210,46 @@ class FoodMenusController extends BaseController
             'code' => 'sometimes|required|string|max:255',
             'name' => 'sometimes|required|string|max:255',
             'name_arabic' => 'sometimes|required|string|max:255',
-            'add_port_by_product' => 'nullable|string|max:255',
+            'add_port_by_product' => 'sometimes|string|max:255',
             'category_id' => 'sometimes|required|exists:food_menu_categories,id',
-            'sub_category_id' => 'nullable|exists:food_menu_sub_categories,id',
+            'sub_category_id' => 'sometimes|exists:food_menu_sub_categories,id',
             'is_discount' => 'sometimes|required|string|max:255',
-            'discount_amount' => 'nullable|numeric',
-            'description' => 'nullable|string',
+            'discount_amount' => 'sometimes|nullable|numeric',
+            'description' => 'sometimes|string',
             'sale_price' => 'sometimes|required|numeric',
             'hunger_station_price' => 'sometimes|required|numeric',
             'jahiz_price' => 'sometimes|required|numeric',
             'tax_method' => 'sometimes|required|string|max:255',
             'kot_print' => 'sometimes|required|string|max:255',
-            'is_vendor' => 'nullable|string|max:255',
-            'vendor_name' => 'nullable|string|max:255',
+            'is_vendor' => 'sometimes|string|max:255',
+            'vendor_name' => 'sometimes|string|max:255',
             'vat_id' => 'sometimes|required|exists:vats,id',
             'user_id' => 'sometimes|required|exists:users,id',
             'outlet_id' => 'sometimes|required|exists:outlets,id',
-            'photo' => 'nullable|file',
-            'veg_item' => 'nullable|string|max:255',
-            'beverage_item' => 'nullable|string|max:255',
-            'bar_item' => 'nullable|string|max:255',
-            'stock' => 'nullable|string|max:255',
+            'veg_item' => 'sometimes|string|max:255',
+            'beverage_item' => 'sometimes|string|max:255',
+            'bar_item' => 'sometimes|string|max:255',
+            'stock' => 'sometimes|string|max:255',
             'status' => 'sometimes|required|string|max:255',
             'is_new' => 'sometimes|required|string|max:255',
             'is_tax_fix' => 'sometimes|required|string|max:255',
-            'del_status' => 'nullable',
-            'ingredients' => 'nullable|array', // Validate that ingredients is an array
+            'del_status' => 'sometimes',
+            'ingredients' => 'sometimes|array', // Validate that ingredients is an array
             'ingredients.*.ingredient_id' => 'required_with:ingredients|exists:ingredients,id',
             'ingredients.*.consumption' => 'required_with:ingredients',
         ]);
-
+    
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
-
-
+    
         // Find the food menu
         $foodMenu = $this->foodMenus->find($id);
-
+    
         if (!$foodMenu) {
             return response()->json(['message' => 'Food Menu not found'], 404);
         }
-
+    
         // Handle file upload
         $photoName = $foodMenu->photo;
         if ($request->hasFile('photo')) {
@@ -262,15 +260,20 @@ class FoodMenusController extends BaseController
             // Store the new photo
             $photoName = $request->file('photo')->store('storage/photos', 'public');
         }
-
-        // Update the food menu
-        $foodMenu->update(array_merge($request->except(['ingredients']), ['photo' => $photoName]));
-
+    
+        // Set default discount_amount if not provided or set it to null
+        $data = $request->all();
+        if (isset($data['discount_amount']) && $data['discount_amount'] === '') {
+            $data['discount_amount'] = null;
+        }
+    
+        $foodMenu->update(array_merge($data, ['photo' => $photoName]));
+    
         // Update ingredients if provided
         if ($request->has('ingredients')) {
             // Delete existing ingredients
             $this->foodMenuIngredient->where('food_menu_id', $id)->delete();
-
+    
             // Create new ingredients
             $ingredients = $request->input('ingredients', []);
             foreach ($ingredients as $ingredient) {
@@ -283,9 +286,10 @@ class FoodMenusController extends BaseController
                 ]);
             }
         }
-
+    
         return response()->json(['message' => 'Food Menu updated successfully', 'data' => $foodMenu], 200);
     }
+    
 
 
     /**

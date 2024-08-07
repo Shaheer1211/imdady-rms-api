@@ -132,31 +132,33 @@ class FoodMenuCategoriesController extends BaseController
         $categories = $this->categories->find($id);
         if ($categories) {
             $validator = Validator::make($request->all(), [
-                'category_name' => 'nullable|string|max:255',
-                'cat_name_arabic' => 'nullable|string|max:255',
-                'description' => 'nullable|string',
-                'cat_image' => 'nullable|file|max:255',
-                'cat_banner' => 'nullable|file|max:255',
-                'web_status' => 'nullable|in:active,inactive',
-                'subscriptions_status' => 'nullable|in:active,inactive',
-                'status' => 'nullable|in:active,inactive',
-                'is_subscription' => 'nullable|boolean',
-                'add_port' => 'nullable|string|max:255',
-                'user_id' => 'nullable|exists:users,id',
-                'outlet_id' => 'nullable|exists:outlets,id',
-                'is_sub_cat' => 'nullable|boolean',
-                'is_priority' => 'nullable|integer',
+                'category_name' => 'sometimes|string|max:255',
+                'cat_name_arabic' => 'sometimes|string|max:255',
+                'description' => 'sometimes|string',
+                // 'cat_image' => 'nullable|file', // Allows null or file
+                // 'cat_banner' => 'nullable|file', // Allows null or file
+                'web_status' => 'sometimes|in:active,inactive',
+                'subscriptions_status' => 'sometimes|in:active,inactive',
+                'status' => 'sometimes|in:active,inactive',
+                'is_subscription' => 'sometimes|boolean',
+                'add_port' => 'sometimes|string|max:255',
+                'user_id' => 'sometimes|exists:users,id',
+                'outlet_id' => 'sometimes|exists:outlets,id',
+                'is_sub_cat' => 'sometimes|boolean',
+                'is_priority' => 'sometimes|integer',
             ]);
-
+    
+            // error_log('Before Validator: ' . print_r($request->all(), true));
+    
             if ($validator->fails()) {
                 return $this->sendError('Validation Error.', $validator->errors());
             }
-
+    
             // Log the request payload for debugging
-            error_log('Request payload: ' . print_r($request->all(), true));
-
+            // error_log('Category before saving: ' . print_r($categories->toArray(), true));
+    
             // Assign each field
-            $categories->category_name = $request->input('category_name', $categories->category_name);
+            $categories->category_name = $request->input('category_name', $categories->category_name);  
             $categories->cat_name_arabic = $request->input('cat_name_arabic', $categories->cat_name_arabic);
             $categories->description = $request->input('description', $categories->description);
             $categories->web_status = $request->input('web_status', $categories->web_status);
@@ -168,32 +170,38 @@ class FoodMenuCategoriesController extends BaseController
             $categories->outlet_id = $request->input('outlet_id', $categories->outlet_id);
             $categories->is_sub_cat = $request->input('is_sub_cat', $categories->is_sub_cat);
             $categories->is_priority = $request->input('is_priority', $categories->is_priority);
-
-            // Log the category before saving
-            error_log('Category before saving: ' . print_r($categories->toArray(), true));
-
+    
             // Store the photos if provided
+            // $catImage = null;
+            // if ($request->hasFile('photo')) {
+            //     $catImage = $request->photo->getClientOriginalExtension();
+            //     $image = rand() . '.' . $catImage;
+            //     $request->photo->move('storage/category_images', $image);
+            //     $categories->cat_image = 'category_images/' . $image;
+            // }
             if ($request->hasFile('cat_image')) {
-                $catImage = $request->file('cat_image')->store('storage/category_images', 'public');
+                $catImage = $request->file('cat_image')->store('category_images', 'public');
                 $categories->cat_image = $catImage;
             }
-
+    
+            // $catBanner = null;
             if ($request->hasFile('cat_banner')) {
-                $catBanner = $request->file('cat_banner')->store('storage/category_banners', 'public');
+                $catBanner = $request->file('cat_banner')->store('category_banners', 'public');
                 $categories->cat_banner = $catBanner;
             }
-
+    
             // Save the category
             $categories->save();
-
+    
             // Log the category after saving
-            error_log('Category after saving: ' . print_r($categories->toArray(), true));
-
+            // error_log('Category after saving: ' . print_r($categories->toArray(), true));
+    
             return response()->json(['message' => 'Category updated successfully', 'category' => $categories], 200);
         } else {
             return response()->json(['message' => 'Category not found'], 404);
         }
     }
+    
 
 
 

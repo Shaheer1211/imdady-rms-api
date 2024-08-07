@@ -16,9 +16,11 @@ class DealController extends BaseController
      * Display a listing of the resource.
      */
     protected $deal;
+    protected $dealItem;
     public function __construct()
     {
         $this->deal = new Deal();
+        $this->dealItem = new DealItem();
     }
     public function index(Request $request)
     {
@@ -202,7 +204,11 @@ class DealController extends BaseController
                     'ingredients.ingredient.ingredientUnit',
                     'modifiers.modifier'
                 ]);
-            }
+            },
+            'category',
+            'vat',
+            'user',
+            'outlet',
         ])->where('id', $id)->first();
 
         return $this->sendResponse($deal, 200);
@@ -285,9 +291,8 @@ class DealController extends BaseController
             'vat_id' => 'nullable|exists:vats,id',
             'user_id' => 'nullable|exists:users,id',
             'outlet_id' => 'nullable|exists:outlets,id',
-            'photo' => 'nullable|file',
-            'items' => 'nullable|array',
-            'del_status' => 'nullable'
+            // 'photo' => 'nullable|file',
+            'items' => 'nullable|array'
         ]);
 
         if ($validator->fails()) {
@@ -303,21 +308,22 @@ class DealController extends BaseController
         }
 
         // Update the deal attributes
-        $deal->code = $request->input('code');
-        $deal->name = $request->input('name');
-        $deal->name_arabic = $request->input('name_arabic');
-        $deal->category_id = $request->input('category_id');
-        $deal->is_discount = $request->input('is_discount');
-        $deal->discount_percentage = $request->input('discount_percentage');
-        $deal->description = $request->input('description');
-        $deal->sale_price = $request->input('sale_price');
-        $deal->hunger_station_price = $request->input('hunger_station_price');
-        $deal->jahiz_price = $request->input('jahiz_price');
-        $deal->tax_method = $request->input('tax_method');
-        $deal->kot_print = $request->input('kot_print');
-        $deal->vat_id = $request->input('vat_id');
-        $deal->user_id = $request->input('user_id');
-        $deal->outlet_id = $request->input('outlet_id');
+        $deal->code = $request->input('code', $deal->code);
+        $deal->name = $request->input('name', $deal->conamede);
+        $deal->name_arabic = $request->input('name_arabic', $deal->name_arabic);
+        $deal->category_id = $request->input('category_id', $deal->category_id);
+        $deal->is_discount = $request->input('is_discount', $deal->is_discount);
+        $deal->discount_percentage = $request->input('discount_percentage', $deal->discount_percentage);
+        $deal->description = $request->input('description', $deal->description);
+        $deal->sale_price = $request->input('sale_price', $deal->sale_price);
+        $deal->hunger_station_price = $request->input('hunger_station_price', $deal->hunger_station_price);
+        $deal->jahiz_price = $request->input('jahiz_price', $deal->jahiz_price);
+        $deal->tax_method = $request->input('tax_method', $deal->tax_method);
+        $deal->kot_print = $request->input('kot_print', $deal->kot_print);
+        $deal->vat_id = $request->input('vat_id', $deal->vat_id);
+        $deal->user_id = $request->input('user_id', $deal->user_id);
+        $deal->outlet_id = $request->input('outlet_id', $deal->outlet_id);
+        $deal->status = $request->input('status', $deal->status);
         // You may need to handle date attributes similarly if you have any
 
         // Store the photo if provided
@@ -329,16 +335,18 @@ class DealController extends BaseController
         // Save the updated Deal to the database
         $deal->save();
 
-        // Delete existing deal items
-        $deal->items()->delete();
+        if ($request->has('items')) {
+            // Delete existing deal items
+            $this->dealItem->where('deal_id', $id)->delete();
 
-        // Create/update deal items
-        foreach ($request->input('items') as $item) {
-            $dealItem = new DealItem();
-            $dealItem->deal_id = $deal->id;
-            $dealItem->item_id = $item['item_id'];
-            $dealItem->quantity = $item['quantity'];
-            $dealItem->save();
+            // Create/update deal items
+            foreach ($request->input('items') as $item) {
+                $dealItem = new DealItem();
+                $dealItem->deal_id = $deal->id;
+                $dealItem->item_id = $item['item_id'];
+                $dealItem->quantity = $item['quantity'];
+                $dealItem->save();
+            }
         }
 
         return $this->sendResponse('Deal updated successfully.', $deal);

@@ -55,7 +55,7 @@ class CartController extends BaseController
 
             if ($cart->deal_id !== null) {
                 // Calculations when a deal is present
-                $cart->photo = Storage::url($cart->deal->photo);
+                $cart->photo = url(Storage::url($cart->deal->photo));
                 $itemPrice = $cart->deal->sale_price * $cart->quantity;
                 $vatPercentage = $cart->deal->vat->percentage;
                 $totalPrice += $itemPrice;
@@ -65,7 +65,7 @@ class CartController extends BaseController
                 }
             } elseif ($cart->item_id !== null) {
                 // Calculations when a food menu item is present
-                $cart->photo = Storage::url($cart->foodMenu->photo);
+                $cart->photo = url(Storage::url($cart->foodMenu->photo));
                 $itemPrice = $cart->foodMenu->sale_price * $cart->quantity;
                 $vatPercentage = $cart->foodMenu->vat->percentage;
                 $totalPrice += $itemPrice;
