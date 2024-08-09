@@ -58,7 +58,7 @@ class FoodMenuModifiersController extends BaseController
                 "fm.created_at",
                 "fm.updated_at"
             )
-            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id": \', m.id, \', "addOn": "\', m.name, \', "addOnPrice": "\', m.price, \'"}\') SEPARATOR \', \') AS modifiers'))   
+            ->select('fm.*', DB::raw('GROUP_CONCAT(CONCAT(\'{ "id": \', m.id, \', "addOn": "\', m.name, \', "addOnPrice": "\', m.price, \'"}\') SEPARATOR \', \') AS modifiers'))
             ->get();
 
         $foodMenus->each(function ($foodMenu) {
@@ -160,10 +160,26 @@ class FoodMenuModifiersController extends BaseController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFoodMenuModifiersRequest $request, FoodMenuModifiers $foodMenuModifiers)
+    public function update(Request $request, int $id)
     {
-        //
+        // Delete existing modifiers for the given food menu
+        FoodMenuModifiers::where('food_menu_id', $id)->delete();
+    
+        // Iterate over the new modifiers from the request and create them
+        foreach ($request->modifiers as $modifierId) {
+            $data['food_menu_id'] = $id;
+            $data['modifier_id'] = $modifierId;  // Use the modifier ID directly
+            $data['user_id'] = $request->input('user_id');  // Fetch user_id from request
+            $data['outlet_id'] = $request->input('outlet_id');  // Fetch outlet_id from request
+    
+            FoodMenuModifiers::create($data);
+        }
+    
+        // Return a success message
+        return response()->json(['message' => 'Modifiers updated successfully'], 200);
     }
+    
+
 
     /**
      * Remove the specified resource from storage.
